@@ -31,27 +31,27 @@ def legal_actions(history: str) -> List[str]:
     """Return legal action strings given the betting history."""
     if history == "":
         return ["check", "bet"]
-    if history == "c":
+    if history == "x":
         return ["check", "bet"]
     if history == "b":
         return ["fold", "call"]
-    if history == "cb":
+    if history == "xb":
         return ["fold", "call"]
     return []  # terminal
 
 
 def is_terminal(history: str) -> bool:
     """True if history corresponds to an ended hand."""
-    return history in {"cc", "bc", "bf", "cbf", "cbc"}
+    return history in {"xx", "bc", "bf", "xbf", "xbc"}
 
 
 def pot_size(history: str) -> int:
     """Total chips in the pot at terminal (antes already in)."""
-    if history == "cc":
+    if history == "xx":
         return 2
-    if history in {"bf", "cbf"}:  # bet‑fold
+    if history in {"bf", "xbf"}:  # bet‑fold
         return 3
-    if history in {"bc", "cbc"}:  # bet‑call
+    if history in {"bc", "xbc"}:  # bet‑call
         return 4
     return 2  # during play
 
@@ -61,13 +61,13 @@ def terminal_utility(history: str, cards: Tuple[str, str]) -> int:
     p0_card, p1_card = cards
 
     # Someone folded — bettor wins 1 chip from opponent
-    if history in {"bf", "cbf"}:
+    if history in {"bf", "xbf"}:
         winner = 0 if history[0] == "b" else 1
         return 1 if winner == 0 else -1
 
     # Showdown (check‑check or bet‑call)
     winner = 0 if CARD_RANK[p0_card] > CARD_RANK[p1_card] else 1
-    payoff = 1 if history == "cc" else 2  # win amount depends on pot 2 or 4
+    payoff = 1 if history == "xx" else 2  # win amount depends on pot 2 or 4
     return payoff if winner == 0 else -payoff
 
 # -------------------------------------------------------------
@@ -125,7 +125,7 @@ class KuhnCFRTrainer:
         node_util = 0.0
 
         for a_prob, action in zip(strategy, actions):
-            next_history = history + ("c" if action in {"check", "call"} else "b" if action == "bet" else "f")
+            next_history = history + ("c" if action == "call" else "b" if action == "bet" else "x" if action == "check" else "f")
             if player == 0:
                 val = -self._cfr(cards, next_history, p0 * a_prob, p1)
             else:
@@ -151,7 +151,7 @@ class KuhnCFRTrainer:
 class KuhnTextGUI:
     def __init__(self, profile: Dict[str, List[float]]):
         self.profile = profile
-        self.char_map = {"check": "c", "call": "c", "bet": "b", "fold": "f"}
+        self.char_map = {"check": "x", "call": "c", "bet": "b", "fold": "f"}
 
     def _bot_move(self, card: str, history: str) -> str:
         actions = legal_actions(history)
@@ -198,7 +198,7 @@ class KuhnTextGUI:
 
 def self_play(profile: Dict[str, List[float]], hands: int = 50_000) -> float:
     payoff_sum = 0
-    char_map = {"check": "c", "call": "c", "bet": "b", "fold": "f"}
+    char_map = {"check": "x", "call": "c", "bet": "b", "fold": "f"}
     for _ in range(hands):
         deck = CARDS[:]
         random.shuffle(deck)
@@ -214,7 +214,7 @@ def self_play(profile: Dict[str, List[float]], hands: int = 50_000) -> float:
     return payoff_sum / hands
 
 def watch_self_play(profile, hands=1):
-    char_map = {"check": "c", "call": "c", "bet": "b", "fold": "f"}
+    char_map = {"check": "x", "call": "c", "bet": "b", "fold": "f"}
     for h in range(hands):
         deck = CARDS[:]
         random.shuffle(deck)
