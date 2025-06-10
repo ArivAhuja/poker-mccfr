@@ -315,14 +315,6 @@ def main():
     
     # Get final strategy
     strategy = solver.get_final_strategy()
-    
-    # Print some example strategies
-    print("\nExample strategies (first 10):")
-    for i, (info_state, actions) in enumerate(strategy.items()):
-        if i < 10:
-            print(f"{info_state}: {actions}")
-    
-    print(f"\nTotal information states with strategies: {len(strategy)}")
 
 
 if __name__ == "__main__":
