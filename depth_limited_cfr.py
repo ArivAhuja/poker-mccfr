@@ -152,3 +152,139 @@ class DepthLimitedCFR:
             print(f"Sample info set '{first_info_set}':")
             print(f"Blueprint: {self.blueprint_strategy[first_info_set]}")
             print(f"Fold_heavy: {self.continuation_strategies['fold_heavy'][first_info_set]}")
+
+        
+
+    def should_trigger_search(self, state, current_depth, betting_round=None):
+        """
+        Determine whether to use blueprint strategy or trigger depth-limited search.
+        
+        Uses available state information to make intelligent decisions about when
+        expensive real-time search will provide the most benefit.
+        
+        :param state: Current OpenSpiel game state
+        :param current_depth: How deep we are in current decision tree  
+        :param betting_round: Optional betting round info (if available)
+        :return: Boolean - True if should use depth-limited search
+        """
+        
+        # Priority 1: Never search terminal/chance nodes
+        if state.is_terminal() or state.current_player() == -1:
+            return False
+        
+        # Priority 2: Always search if too deep
+        if current_depth >= self.depth_limit:
+            return True
+
+        # Priority 3: Always search if many actions available (complex decision)
+        if hasattr(state, 'legal_actions'):
+            num_legal_actions = len(state.legal_actions())
+            if num_legal_actions >= 5:
+                return True
+        
+        # Priority 4: Use history length as final criterion
+        history_length = len(state.history()) if hasattr(state, 'history') else 0
+        return history_length > 9 # search after preflop
+
+    def create_subgame(self, root_state, depth_limit):
+        """
+        Create a subgame for real-time depth-limited solving.
+        
+        This method builds a game tree starting from root_state and stopping
+        at specified boundaries. The leaf nodes become strategy selection points
+        where opponents choose continuation strategies.
+        
+        :param root_state: Game state where subgame begins
+        :param depth_limit: Maximum depth before creating leaf nodes
+        :return: Dictionary containing subgame structure
+        """
+        
+        subgame = {
+            'root': root_state.clone(),
+            'nodes': {},           # state_id -> state_info mapping
+            'leaf_nodes': set(),   # Set of leaf node IDs
+            'edges': {},           # state_id -> {action: next_state_id}
+            'node_counter': 0      # To assign unique IDs
+        }
+        
+        def get_state_id(state):
+            """Generate unique ID for a game state based on history."""
+            return str(state.history())
+        
+        def add_node_to_subgame(state, depth, is_leaf=False):
+            """Add a state to the subgame structure."""
+            state_id = get_state_id(state)
+            
+            if state_id not in subgame['nodes']:
+                subgame['nodes'][state_id] = {
+                    'state': state.clone(),
+                    'depth': depth,
+                    'player': state.current_player(),
+                    'is_terminal': state.is_terminal(),
+                    'legal_actions': state.legal_actions() if not state.is_terminal() else []
+                }
+                subgame['edges'][state_id] = {}
+            
+            if is_leaf:
+                subgame['leaf_nodes'].add(state_id)
+            
+            return state_id
+        
+        def should_create_leaf(state, depth):
+            """Determine if we should stop expanding and create a leaf node."""
+            
+            # Always stop at terminal states
+            if state.is_terminal():
+                return True
+            
+            # Stop if we've reached depth limit
+            if depth >= depth_limit:
+                return True
+            
+            # Stop if we've reached a reasonable subgame size (prevent explosion)
+            if len(subgame['nodes']) >= 1000:  # Computational limit
+                return True
+            
+            # For Hold'em: could add betting round completion logic here
+            # Example: if end_of_betting_round(state):
+            #     return True
+            
+            return False
+        
+        def build_subgame_recursive(current_state, current_depth):
+            """Recursively build the subgame tree."""
+            
+            current_id = get_state_id(current_state)
+            
+            # Check if we should create a leaf node here
+            if should_create_leaf(current_state, current_depth):
+                add_node_to_subgame(current_state, current_depth, is_leaf=True)
+                return current_id
+            
+            # Add current node to subgame
+            add_node_to_subgame(current_state, current_depth, is_leaf=False)
+            
+            # Explore all legal actions from this state
+            for action in current_state.legal_actions():
+                # Create next state
+                next_state = current_state.clone()
+                next_state.apply_action(action)
+                
+                # Recursively build from next state
+                next_id = build_subgame_recursive(next_state, current_depth + 1)
+                
+                # Record the edge (action leads to next state)
+                subgame['edges'][current_id][action] = next_id
+            
+            return current_id
+        
+        # Build the subgame starting from root
+        root_id = build_subgame_recursive(root_state, 0)
+        subgame['root_id'] = root_id
+        
+        return subgame
+
+        
+
+
+
