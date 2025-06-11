@@ -2,6 +2,64 @@ from cfr import BaseCFR
 import copy
 import numpy as np
 
+"""
+Depth-Limited CFR Implementation for Imperfect Information Games
+
+This module implements depth-limited search techniques for real-time strategy computation
+during gameplay, based on the multi-valued states approach from Brown, Sandholm & Amos (2018).
+
+=== IMPLEMENTATION STATUS ===
+
+COMPLETED COMPONENTS ✅:
+
+Step 1-2: Blueprint Strategy Generation
+   - ✅ Built system to train and store baseline strategy for entire game
+   - ✅ Extracts average strategies from CFR training (12 info sets for Kuhn)
+   - ✅ Method: generate_blueprint_strategy()
+
+Step 3: Continuation Strategy Generation  
+   - ✅ Created 4 different opponent strategy types (blueprint, fold_heavy, call_heavy, raise_heavy)
+   - ✅ Mathematical biasing and renormalization working correctly
+   - ✅ Method: generate_continuation_strategies()
+
+Step 4: Depth Detection System
+   - ✅ Smart triggers for when to use expensive real-time search vs. cheap blueprint
+   - ✅ Handles depth limits, game complexity, terminal states
+   - ✅ Method: should_trigger_search()
+
+Step 5: Subgame Boundary Detection
+   - ✅ Creates bounded game trees for real-time solving (7 nodes, 4 leaf nodes)
+   - ✅ Proper tree traversal and boundary conditions
+   - ✅ Method: create_subgame()
+
+REMAINING WORK 🔄:
+
+Step 6: Strategy Selection Node Implementation
+   - What: Modify CFR to handle leaf nodes where opponents choose from 4 continuation strategies
+   - Key challenge: At leaf nodes, instead of fixed values, opponents select strategies and get payoffs
+   - Method needed: solve_modified_subgame()
+
+Step 7: Value Estimation System
+   - What: Calculate terminal payoffs when opponents choose strategy combinations  
+   - Two options: Rollout method (simulate games) OR lookup tables (pre-computed values)
+   - Method needed: estimate_leaf_values()
+
+Step 8: Real-Time Search Integration
+   - What: Main method that ties everything together for actual gameplay
+   - Purpose: Called during real gameplay to make real-time strategic decisions
+   - Method needed: solve_subgame_realtime()
+
+=== PROGRESS: ~60% Complete ===
+Foundation components (Steps 1-5) are working perfectly.
+Core DLS innovation (Steps 6-8) still needed for full implementation.
+
+
+=== USAGE ===
+Once complete, usage will be:
+   dls = DepthLimitedCFR(your_cfr_implementation, depth_limit=3)
+   strategy = dls.solve_subgame_realtime(current_game_state)
+"""
+
 class DepthLimitedCFR:
     """
     Depth-Limited Search CFR Implementation for Imperfect Information Games
