@@ -143,8 +143,8 @@ def reconstruct_state_string(original_state: str, canonical_private: List[str],
     return new_state
 
 
-def apply_suit_isomorphism(state_string: str) -> str:
-    """Apply suit isomorphism to OpenSpiel poker state string, returning canonical form."""
+def apply_suit_isomorphism_string(state_string: str) -> str:
+    """Apply suit isomorphism to OpenSpiel poker state string, returning string canonical form."""
     # Extract cards from state
     private_cards, public_cards = extract_cards_from_state(state_string)
     
@@ -155,6 +155,16 @@ def apply_suit_isomorphism(state_string: str) -> str:
     canonical_state = reconstruct_state_string(state_string, canonical_private, canonical_public)
     
     return canonical_state
+
+def apply_suit_isomorphism(state_string: str) -> Tuple[List[str], List[str]]:
+    """Apply suit isomorphism to OpenSpiel poker state string, returning canonical form."""
+    # Extract cards from state
+    private_cards, public_cards = extract_cards_from_state(state_string)
+    
+    # Apply suit isomorphism
+    canonical_private, canonical_public = canonicalize_cards(private_cards, public_cards)
+    
+    return canonical_private, canonical_public
 
 
 # Example usage and test cases
@@ -174,7 +184,7 @@ if __name__ == "__main__":
     print()
     
     # Test case 3: Mixed suits
-    state3 = "[Round 1][Player: 0][Pot: 1200][Money: 9700 9750 10000 10000 10000 10000][Private: AsKd][Public: QhJc9d][Sequences: cc]"
+    state3 = "[Round 1][Player: 0][Pot: 1200][Money: 9700 9750 10000 10000 10000 10000][Private: KsAd][Public: QhJc9d][Sequences: cc]"
     canonical3 = apply_suit_isomorphism(state3)
     print(f"Original:  {state3}")
     print(f"Canonical: {canonical3}")
