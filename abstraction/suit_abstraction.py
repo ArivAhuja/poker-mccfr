@@ -2,11 +2,11 @@
 Suit Isomorphism Converter for OpenSpiel Poker States
 
 This module converts OpenSpiel poker state strings to use canonical card representations
-based on suit isomorphism principles.
+based on suit isomorphism principles, maintaining separate private and public cards.
 """
 
 import re
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple
 
 
 def parse_card(card_str: str) -> Tuple[int, int]:
@@ -23,8 +23,8 @@ def parse_card(card_str: str) -> Tuple[int, int]:
 
 
 def card_to_string(rank: int, suit: int) -> str:
-    """Convert (rank, suit) indices back to card string."""
-    ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 't', 'j', 'q', 'k', 'a']
+    """Convert (rank, suit) indices back to card string with capital ranks."""
+    ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
     suits = ['s', 'h', 'd', 'c']
     
     return ranks[rank] + suits[suit]
@@ -77,21 +77,33 @@ def find_canonical_permutation(cards: List[str]) -> Dict[int, int]:
     # Get suit signatures
     signatures = compute_suit_signature(cards)
     
-    # Create (signature, original_suit) pairs and sort
-    suit_pairs = [(sig, suit) for suit, sig in enumerate(signatures)]
-    # Sort by: count (desc), highest rank (desc), sum of ranks (desc), original suit (asc)
-    suit_pairs.sort(key=lambda x: (-x[0][0], -x[0][1], -x[0][2], x[1]))
+    # Group suits by their signatures
+    signature_to_suits = {}
+    for suit, sig in enumerate(signatures):
+        sig_tuple = tuple(sig)
+        if sig_tuple not in signature_to_suits:
+            signature_to_suits[sig_tuple] = []
+        signature_to_suits[sig_tuple].append(suit)
     
-    # Create permutation mapping
+    # Sort signature groups by signature value
+    sorted_sig_groups = sorted(signature_to_suits.items(),
+                              key=lambda x: (-x[0][0], -x[0][1], -x[0][2]))
+    
+    # Assign canonical suits
     permutation = {}
-    for canonical_suit, (_, original_suit) in enumerate(suit_pairs):
-        permutation[original_suit] = canonical_suit
+    canonical_suit = 0
+    
+    for signature, suits in sorted_sig_groups:
+        # Within each signature group, assign canonical suits in a fixed order
+        for suit in sorted(suits):
+            permutation[suit] = canonical_suit
+            canonical_suit += 1
     
     return permutation
 
 
 def apply_suit_permutation(cards: List[str], permutation: Dict[int, int]) -> List[str]:
-    """Apply suit permutation to cards."""
+    """Apply suit permutation to cards, keeping ranks unchanged."""
     canonical_cards = []
     
     for card in cards:
@@ -102,38 +114,63 @@ def apply_suit_permutation(cards: List[str], permutation: Dict[int, int]) -> Lis
     return canonical_cards
 
 
+def sort_cards_by_rank(cards: List[str]) -> List[str]:
+    """Sort cards by rank in descending order, then by suit in ascending order."""
+    card_tuples = [(parse_card(card), card) for card in cards]
+    # Sort by rank descending (-rank) and suit ascending (suit)
+    card_tuples.sort(key=lambda x: (-x[0][0], x[0][1]))
+    
+    return [card_to_string(rank, suit) for (rank, suit), _ in card_tuples]
+
+
 def canonicalize_cards(private_cards: List[str], public_cards: List[str]) -> Tuple[List[str], List[str]]:
-    """Convert cards to canonical form using suit isomorphism."""
+    """
+    Convert cards to canonical form using suit isomorphism.
+    
+    Args:
+        private_cards: List of private card strings
+        public_cards: List of public card strings
+    
+    Returns:
+        Tuple of (canonicalized_private_cards, canonicalized_public_cards)
+    """
     # Combine all cards to determine the permutation
     all_cards = private_cards + public_cards
     
-    # Find the canonical permutation
+    # Find the canonical permutation based on all cards
     permutation = find_canonical_permutation(all_cards)
     
-    # Apply to both private and public cards
+    # Apply to private and public cards separately
     canonical_private = apply_suit_permutation(private_cards, permutation)
     canonical_public = apply_suit_permutation(public_cards, permutation)
     
-    return canonical_private, canonical_public
+    # Sort each group by rank (descending)
+    sorted_private = sort_cards_by_rank(canonical_private)
+    sorted_public = sort_cards_by_rank(canonical_public)
+    
+    return sorted_private, sorted_public
 
 
-def reconstruct_state_string(original_state: str, canonical_private: List[str], 
-                           canonical_public: List[str]) -> str:
-    """Reconstruct state string with canonical cards."""
-    # Replace private cards
+def apply_suit_isomorphism(state_string: str) -> str:
+    """Apply suit isomorphism to OpenSpiel poker state string, keeping Private and Public separate."""
+    # Extract cards from state
+    private_cards, public_cards = extract_cards_from_state(state_string)
+    
+    # Canonicalize cards
+    canonical_private, canonical_public = canonicalize_cards(private_cards, public_cards)
+    
+    # Create the card strings
     private_str = ''.join(canonical_private)
+    public_str = ''.join(canonical_public)
+    
+    # Replace Private section
     new_state = re.sub(
         r'\[Private: [^\]]*\]',
         f'[Private: {private_str}]',
-        original_state
+        state_string
     )
     
-    # Replace public cards
-    if canonical_public:
-        public_str = ''.join(canonical_public)
-    else:
-        public_str = ''
-    
+    # Replace Public section
     new_state = re.sub(
         r'\[Public: [^\]]*\]',
         f'[Public: {public_str}]',
@@ -143,48 +180,79 @@ def reconstruct_state_string(original_state: str, canonical_private: List[str],
     return new_state
 
 
-def apply_suit_isomorphism_string(state_string: str) -> str:
-    """Apply suit isomorphism to OpenSpiel poker state string, returning string canonical form."""
-    # Extract cards from state
-    private_cards, public_cards = extract_cards_from_state(state_string)
-    
-    # Apply suit isomorphism
-    canonical_private, canonical_public = canonicalize_cards(private_cards, public_cards)
-    
-    # Reconstruct state string
-    canonical_state = reconstruct_state_string(state_string, canonical_private, canonical_public)
-    
-    return canonical_state
-
-def apply_suit_isomorphism(state_string: str) -> Tuple[List[str], List[str]]:
-    """Apply suit isomorphism to OpenSpiel poker state string, returning canonical form."""
-    # Extract cards from state
-    private_cards, public_cards = extract_cards_from_state(state_string)
-    
-    # Apply suit isomorphism
-    canonical_private, canonical_public = canonicalize_cards(private_cards, public_cards)
-    
-    return canonical_private, canonical_public
-
-
 # Example usage and test cases
 if __name__ == "__main__":
-    # Test case 1: Pocket pairs
-    state1 = "[Round 0][Player: 1][Pot: 600][Money: 9900 9950 10000 10000 10000 10000][Private: 2d2c][Public: ][Sequences: ]"
+    # Test case 1: Basic example
+    state1 = "[Round 0][Player: 1][Pot: 600][Money: 9900 9950 10000 10000 10000 10000][Private: 2s4s][Public: AsKs3s][Sequences: ]"
     canonical1 = apply_suit_isomorphism(state1)
     print(f"Original:  {state1}")
     print(f"Canonical: {canonical1}")
     print()
     
-    # Test case 2: Suited cards with public cards
-    state2 = "[Round 1][Player: 0][Pot: 1200][Money: 9700 9750 10000 10000 10000 10000][Private: AhKh][Public: QhJhTh][Sequences: cc]"
-    canonical2 = apply_suit_isomorphism(state2)
-    print(f"Original:  {state2}")
-    print(f"Canonical: {canonical2}")
+    # Test case 2: Direct function call with simple example
+    print("Test case 2 - Direct function call:")
+    private = ['ks', 'ad']
+    public = ['qh']
+    print(f"Input private: {private}")
+    print(f"Input public: {public}")
+    
+    # Show permutation
+    all_cards = private + public
+    perm = find_canonical_permutation(all_cards)
+    print(f"Suit permutation: {perm}")
+    
+    canon_private, canon_public = canonicalize_cards(private, public)
+    print(f"Canonical private: {canon_private}")
+    print(f"Canonical public: {canon_public}")
     print()
     
-    # Test case 3: Mixed suits
+    # Test case 3: Mixed suits with detailed output
     state3 = "[Round 1][Player: 0][Pot: 1200][Money: 9700 9750 10000 10000 10000 10000][Private: KsAd][Public: QhJc9d][Sequences: cc]"
+    
+    # Extract and show step by step
+    private3, public3 = extract_cards_from_state(state3)
+    print(f"Test case 3 - Mixed suits:")
+    print(f"Original state: {state3}")
+    print(f"Extracted private: {private3}")
+    print(f"Extracted public: {public3}")
+    
+    # Canonicalize
+    canon_priv3, canon_pub3 = canonicalize_cards(private3, public3)
+    print(f"Canonical private: {canon_priv3}")
+    print(f"Canonical public: {canon_pub3}")
+    
+    # Apply to full state
     canonical3 = apply_suit_isomorphism(state3)
-    print(f"Original:  {state3}")
-    print(f"Canonical: {canonical3}")
+    print(f"Final canonical: {canonical3}")
+    print()
+    
+    # Test case 4: Empty public cards
+    state4 = "[Round 0][Player: 1][Pot: 600][Money: 9900 9950 10000 10000 10000 10000][Private: AsKh][Public: ][Sequences: ]"
+    canonical4 = apply_suit_isomorphism(state4)
+    print(f"Original:  {state4}")
+    print(f"Canonical: {canonical4}")
+    print()
+    
+    # Test case 6: Verify the specific example
+    print("Test case 6 - Verifying suit isomorphism (ranks should never change):")
+    test_state = "[Round 1][Player: 0][Pot: 1200][Money: 9700 9750 10000 10000 10000 10000][Private: KsAd][Public: QhJc9d][Sequences: cc]"
+    
+    # Manual step-by-step
+    priv_cards = ['ks', '2d']
+    pub_cards = ['qh', '2c', '2s']
+    
+    print(f"Original: Private={priv_cards}, Public={pub_cards}")
+    
+    # The permutation should only change suits, never ranks!
+    # K should stay K, A should stay A, Q should stay Q, etc.
+    canonical_priv, canonical_pub = canonicalize_cards(priv_cards, pub_cards)
+    
+    print(f"After canonicalization:")
+    print(f"  Private cards: {canonical_priv} (should still have K and A)")
+    print(f"  Public cards: {canonical_pub} (should still have Q, J, and 9)")
+    
+    # Show the full state transformation
+    canonical_state = apply_suit_isomorphism(test_state)
+    print(f"\nFull state transformation:")
+    print(f"Original:  {test_state}")
+    print(f"Canonical: {canonical_state}")
