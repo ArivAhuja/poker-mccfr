@@ -3,7 +3,7 @@ from sklearn_extra.cluster import KMedoids
 from scipy.stats import wasserstein_distance
 from phevaluator.evaluator import evaluate_cards
 from collections import defaultdict
-from suit_abstraction import canonicalize_cards
+from abstraction.old.suit_abstraction import canonicalize_cards
 from itertools import combinations
 from multiprocessing import Pool, cpu_count
 from tqdm import tqdm

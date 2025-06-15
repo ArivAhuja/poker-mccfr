@@ -3,7 +3,7 @@ from sklearn_extra.cluster import KMedoids
 from scipy.stats import wasserstein_distance
 from phevaluator.evaluator import evaluate_cards
 from collections import defaultdict
-from suit_abstraction import canonicalize_cards
+from abstraction.old.suit_abstraction import canonicalize_cards
 from itertools import combinations
 
 def generate_cards(num_cards, exclude_cards=None):
@@ -20,7 +20,7 @@ def generate_cards(num_cards, exclude_cards=None):
     # Generate all combinations of num_cards from remaining deck
     return [list(combo) for combo in combinations(deck, num_cards)]
 
-hand_strength = defaultdict(list)
+hand_strength = {}
 
 num_board_cards = 3
 num_runout_cards = 5 - num_board_cards
@@ -32,7 +32,7 @@ for hero_card in hero_cards:
     for board_card in board_cards:
         canonicalized_hero_card, canonicalized_board_card = canonicalize_cards(hero_card, board_card)
         key = (tuple(canonicalized_hero_card), tuple(canonicalized_board_card))
-        if (tuple(canonicalized_hero_card), tuple(canonicalized_board_card)) in hand_strength:
+        if key in hand_strength:
             continue
         runout_cards = generate_cards(num_runout_cards, hero_card + board_card)
         winrates = []

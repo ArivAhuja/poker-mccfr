@@ -1,4 +1,4 @@
-from cfr import BaseCFR
+from cfr.cfr import BaseCFR
 import copy
 import numpy as np
 

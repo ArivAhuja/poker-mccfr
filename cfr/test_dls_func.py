@@ -1,5 +1,5 @@
-from cfr import KuhnVanillaCFR
-from depth_limited_cfr import DepthLimitedCFR
+from cfr.cfr import KuhnVanillaCFR
+from cfr.depth_limited_cfr import DepthLimitedCFR
 
 '''
 Tests current depth limited search functions from the DepthLimitedCfr class

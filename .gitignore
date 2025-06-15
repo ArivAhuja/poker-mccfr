@@ -31,3 +31,5 @@ dist/
 # Environment variables
 .env
 EOF
+
+# C++

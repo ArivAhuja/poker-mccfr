@@ -220,36 +220,9 @@ class MCCFR_P:
         return final_strategy
 
 
-def create_pluribus_game():
-    """Create 6-player no-limit Texas Hold'em game like Pluribus"""
-    # Pluribus configuration: 6 players, $50/$100 blinds, $10,000 stacks
-    game_string = (
-        "universal_poker("
-        "betting=nolimit,"              # No-limit betting
-        "numPlayers=6,"                 # 6 players
-        "numRounds=4,"                  # Preflop, flop, turn, river
-        "blind=100 50 0 0 0 0,"         # BB=$100, SB=$50, others=$0
-        "firstPlayer=2 0 0 0,"          # Player 3 first preflop, Player 1 first postflop
-        "numSuits=4,"                   # 4 suits
-        "numRanks=13,"                  # 13 ranks (2-A)
-        "numHoleCards=2,"               # 2 hole cards per player
-        "numBoardCards=0 3 1 1,"        # 0 preflop, 3 flop, 1 turn, 1 river
-        "stack=10000,"                  # $10,000 starting stack (100 BB)
-        "bettingAbstraction=fcpa"       # Full game, no abstraction
-        ")"
-    )
-    return pyspiel.load_game(game_string)
-
 
 def create_simple_test_game():
     """Create a simpler game for testing the algorithm"""
-    # Option 1: Kuhn poker (very simple, good for testing)
-    # return pyspiel.load_game("kuhn_poker")
-    
-    # Option 2: Leduc poker (more complex than Kuhn, but still tractable)
-    # return pyspiel.load_game("leduc_poker")
-    
-    # Option 3: Simplified 3-player limit hold'em
     game_string = (
         "universal_poker("
         "betting=limit,"
@@ -261,47 +234,29 @@ def create_simple_test_game():
         "numRanks=3,"                   # Reduced ranks (just 3 ranks)
         "numHoleCards=1,"               # 1 hole card
         "numBoardCards=0 1,"            # 0 preflop, 1 flop
-        "stack=10,"                     # Small stacks
-        "maxRaises=2"                   # Limit raises
+        "stack=24,"                     # Small stacks
+        "maxRaises=4"                   # Limit raises
         ")"
     )
     return pyspiel.load_game(game_string)
 
 
 def main():
-    # Choose which game to use
-    use_full_game = False  # Set to True for Pluribus game, False for testing
+
+    print("Creating simplified test game...")
+    game = create_simple_test_game()
     
-    if use_full_game:
-        print("Creating 6-player no-limit Texas Hold'em (Pluribus configuration)...")
-        game = create_pluribus_game()
-        
-        # Pluribus training parameters (scaled down for demonstration)
-        solver = MCCFR_P(
-            game,
-            prune_threshold_iterations=12000,    # Pluribus: ~200 minutes = ~12M iterations
-            strategy_interval=10000,             # Pluribus: 10,000 iterations
-            discount_interval=600000,            # Pluribus: 10 minutes = ~600k iterations
-            lcfr_threshold=24000000,            # Pluribus: 400 minutes = ~24M iterations
-            prune_probability=0.95,             # Pluribus: 95%
-            regret_floor=-310000000             # Pluribus: -310M
-        )
-        iterations = 100  # Very small for demo (Pluribus used ~50M iterations)
-    else:
-        print("Creating simplified test game...")
-        game = create_simple_test_game()
-        
-        # Smaller parameters for testing
-        solver = MCCFR_P(
-            game,
-            prune_threshold_iterations=200,
-            strategy_interval=100,
-            discount_interval=100,
-            lcfr_threshold=400,
-            prune_probability=0.95,
-            regret_floor=-310000
-        )
-        iterations = 1000
+    # Smaller parameters for testing
+    solver = MCCFR_P(
+        game,
+        prune_threshold_iterations=200,
+        strategy_interval=100,
+        discount_interval=100,
+        lcfr_threshold=400,
+        prune_probability=0.95,
+        regret_floor=-310000
+    )
+    iterations = 1000
     
     # Print game info
     print(f"Game: {game}")
