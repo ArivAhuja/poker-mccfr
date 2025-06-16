@@ -10,25 +10,22 @@ For game specific CFR implementations simply need to adjust abstract classes/met
 utilize open_spiel's useful/available information set functions (strings mostly).
 
 Game Specific Vanilla CFR to be implemented:
-    -KuhnVanillaCFR
-    -LeducHoldem <- Doable with vanilla but not ideal
-    -TexasLimit <- Will need monte carlo
-
-Need to adjust main CFR classes, then reimplement for specific games
-
-CFR algorithms to be implemented:
-    -CFR+ (adjust update_regrets)
-    -Monte Carlo CFR (adjust cfr, sampling based)
+    -LeducHoldem <- Doable with vanilla but not ideal - decided not necessary for base cfr
+    -TexasLimit <- Will need monte carlo - not feasible with vanilla/cfr+
 
 ------------
     DONE
 ------------
 
 Game Specific Vanilla CFR supported:
-    -
+    -KuhnVanillaCFR
+
+Game Specific CFR+ supported:
+    -KuhnCFRPlus
 
 CFR algorithms supported:
     -VanillaCFR (BaseCFR)
+    -CFR+ (CFRPlus)
 """
 
 
@@ -277,15 +274,30 @@ class BaseCFR:
             profile[info_set] = strategy.tolist()
         return profile
 
-class KuhnVanillaCFR(BaseCFR):
+class CFRPlus(BaseCFR):
+    """CFR+ implementation of Vanilla CFR."""
+
+    def __init__(self, num_players=2):
+        super(CFRPlus, self).__init__(num_players)
+
+    def update_regrets(self, info_set, regrets: np.ndarray):
+        """CFR+ modification to update_regrets, only record positive regrets.
+        Add given regrets to the positive cumulative regret sum.
+
+        :param info_set: The information set of the game
+        :param regrets: The given np.darray of regrets
+        """
+        if info_set not in self.regret_sum:
+            self.regret_sum[info_set] = np.zeros(len(regrets))
+        # Always update the regret sum, only taking positive regrets
+        self.regret_sum[info_set] = np.maximum(self.regret_sum[info_set] + regrets, 0)
+
+
+class BaseKuhnCFR:
     """
-    Description
-
-    Arguments:
-
+    Base class for all Kuhn Poker CFR implementations.
     """
     def __init__(self):
-        super(KuhnVanillaCFR, self).__init__(num_players=2)
         self.game = pyspiel.load_game("kuhn_poker")
 
     def get_num_actions(self, info_set: str) -> int:
@@ -357,3 +369,17 @@ class KuhnVanillaCFR(BaseCFR):
             kuhn_gui_profile[gui_key] = strategy
 
         return kuhn_gui_profile
+
+class KuhnVanillaCFR(BaseKuhnCFR, BaseCFR):
+    """Kuhn Poker with Vanilla CFR"""
+
+    def __init__(self):
+        BaseCFR.__init__(self, num_players=2)
+        BaseKuhnCFR.__init__(self)
+
+class KuhnCFRPlus(BaseKuhnCFR, CFRPlus):
+    """Kuhn Poker with CFR+"""
+
+    def __init__(self):
+        CFRPlus.__init__(self, num_players=2)
+        BaseKuhnCFR.__init__(self)
