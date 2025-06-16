@@ -1,7 +1,7 @@
 # mccfr_p.py - MCCFR-P Implementation with Logging
 """
 MCCFR-P (Monte Carlo Counterfactual Regret Minimization with Pruning) 
-implementation for Limit Texas Hold'em using OpenSpiel universal_poker.
+implementation for Simplified Limit Texas Hold'em using OpenSpiel universal_poker.
 
 This implementation includes:
 - Full MCCFR-P algorithm with pruning and Linear CFR discounting
