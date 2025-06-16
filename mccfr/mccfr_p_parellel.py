@@ -768,106 +768,9 @@ class MCCFRPSolver:
         # Initialize worker pool
         self.pool = None
         self._init_pool()
-
-        # Convergence tracking
-        self.previous_strategy = {}
-        self.convergence_history = {
-            'iterations': [],
-            'avg_immediate_regret': [],
-            'exploitability': [],
-            'strategy_distance': []
-        }
         
         self.logger.info(f"Solver initialized with {config.num_processes} processes")
-
-    def compute_avg_immediate_regret(self) -> float:
-        """
-        Compute average immediate regret. Directly measures who far we are from equilibrium.
-        Should converge like 1/square_root(iterations)
-        """
-        total_regret = 0
-        total_actions = 0
-
-        # Iterate through all information states
-        for info_state, action_regrets in self.minimizer.regrets.items():
-            # Sum the absolute regret
-            for regret in action_regrets:
-                total_regret += abs(regret)
-                total_actions += 1
-
-        return total_regret / total_actions if total_actions > 0 else 0
-
-    def compute_exploitability(self) -> float:
-        """
-        Sum of positive regrets / iterations = lower bound on exploitability
-        A value near 0 is near optimal.
-        Used to measure strategy quality.
-        """
-        if self.iteration == 0:
-            return float("inf")
-
-        total_positive_regret = 0.0
-
-        # Sum positive regret over all actions/states
-        for info_state, action_regrets in self.minimizer.regrets.items():
-            for regret in action_regrets:
-                if regret > 0:
-                    total_positive_regret += regret
-
-        return total_positive_regret / self.iteration
-
-    def compute_strategy_distance(self) -> float:
-        """
-        How much the strategy changed from the last check point (how far away is it).
-        Quantified using the manhattan distance.
-        A value near 0 (with low regret) = convergence
-        """
-        if not self.previous_strategy:
-            return 1.0
-
-        total_distance = 0.0
-        compared_states = 0
-
-        # Compare current vs previous strategy
-        for info_state, strategy_sum in self.minimizer.avg_strategy_sum.items():
-            if info_state in self.previous_strategy:
-                # Get current strategy
-                total = sum(strategy_sum)
-                if total > 0:
-                    cur_strategy = [s / total for s in strategy_sum]
-                    prev_strategy = self.previous_strategy[info_state]
-
-                    # Get the manhattan distance between
-                    if len(cur_strategy) == len(prev_strategy):
-                        total_distance += sum(abs(cur_strategy[i] - prev_strategy[i]) for i in
-                                              range(len(cur_strategy)))
-                        compared_states += 1
-
-        # Return average distance between strategies
-        return total_distance / compared_states if compared_states > 0 else 1.0
-
-    def log_convergence_metrics(self):
-        """Log all convergence metrics."""
-        # Compute the three tracked metrics
-        avg_regret = self.compute_avg_immediate_regret()
-        exploit = self.compute_exploitability()
-        strat_distance = self.compute_strategy_distance()
-
-        # Store in history
-        self.convergence_history['iterations'].append(self.iteration)
-        self.convergence_history['avg_immediate_regret'].append(avg_regret)
-        self.convergence_history['exploitability'].append(exploit)
-        self.convergence_history['strategy_distance'].append(strat_distance)
-
-        # Log our current values
-        self.logger.info("=== Convergence Metrics ===")
-        self.logger.info(f"Average Immediate Regret: {avg_regret:.6f}")
-        self.logger.info(f"Exploitability Bound: {exploit:.6f}")
-        self.logger.info(f"Strategy Distance: {strat_distance:.6f}")
-
-        # Return final values
-        return avg_regret, exploit, strat_distance
-
+    
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals"""
         self.logger.warning("Shutdown signal received. Saving checkpoint...")
@@ -1019,9 +922,6 @@ class MCCFRPSolver:
                         'processes': self.config.num_processes
                     }
                 )
-
-                # Track metrics
-                self.log_convergence_metrics()
             
             # Detailed logging
             if self.iteration % self.config.detailed_log_interval == 0:
@@ -1128,29 +1028,6 @@ class MCCFRPSolver:
         except Exception as e:
             self.logger.error(f"Failed to save strategy: {e}", exc_info=True)
 
-    def save_convergence_history(self, path: str):
-        """Save convergence history to compressed file for analysis"""
-        try:
-            # Prepare convergence data
-            convergence_data = {
-                'convergence_history': self.convergence_history,
-                'iteration': self.iteration,
-                'elapsed_time': time.time() - self.start_time,
-                'config': self.config
-            }
-
-            # Save to compressed file
-            with gzip.open(path, 'wb') as f:
-                pickle.dump(convergence_data, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-            file_size_mb = os.path.getsize(path) / (1024 ** 2)
-            self.logger.info(
-                f"Convergence history saved \n Total data points: {len(self.convergence_history['iterations'])}"
-            )
-
-        except Exception as e:
-            self.logger.error(f"Failed to save convergence history: {e}", exc_info=True)
-
 
 def main():
     """Main training script"""
@@ -1206,11 +1083,6 @@ def main():
     logger.info("\nSaving final strategy...")
     strategy_file = f"limit_holdem_strategy_parallel.pkl.gz"
     solver.save_strategy(strategy_file)
-
-    # Save convergence history
-    logger.info("\nSaving convergence history...")
-    convergence_history_file = f"limit_holdem_convergence_history.pkl.gz"
-    solver.save_convergence_history(convergence_history_file)
     
     # Final statistics
     elapsed = time.time() - solver.start_time
