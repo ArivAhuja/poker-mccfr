@@ -285,7 +285,7 @@ void MCCFRPSolver::UpdateStrategy(std::unique_ptr<open_spiel::State> state,
     if (current_player == updating_player) {
         AbstractInfoState info_state(*state, *abstraction_);
         auto legal_actions = state->LegalActions();
-        auto strategy = GetCurrentStrategy(info_state);
+        auto strategy = GetCurrentStrateusing gy(info_state);
         
         // Sample action according to strategy
         std::discrete_distribution<> dis(strategy.begin(), strategy.end());

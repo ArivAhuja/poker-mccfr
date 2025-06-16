@@ -92,9 +92,28 @@ class HostnameFilter(logging.Filter):
         record.hostname = self.hostname
         return True
 
-def setup_logging(log_dir: str = "logs"):
+def setup_logging(log_dir: str = "logs", clear_logs: bool = True):
     """Setup comprehensive logging system"""
     os.makedirs(log_dir, exist_ok=True)
+    
+    # Define log file paths
+    main_log_file = os.path.join(log_dir, 'mccfr_training.log')
+    error_log_file = os.path.join(log_dir, 'mccfr_errors.log')
+    perf_log_file = os.path.join(log_dir, 'mccfr_performance.log')
+    
+    # Clear existing logs if requested
+    if clear_logs:
+        for log_file in [main_log_file, error_log_file, perf_log_file]:
+            if os.path.exists(log_file):
+                # Truncate the file
+                with open(log_file, 'w') as f:
+                    f.write('')
+                    
+            # Also remove any rotated log files
+            for i in range(1, 11):  # Remove up to 10 backup files
+                rotated_file = f"{log_file}.{i}"
+                if os.path.exists(rotated_file):
+                    os.remove(rotated_file)
     
     # Create hostname filter
     hostname_filter = HostnameFilter()
@@ -115,13 +134,15 @@ def setup_logging(log_dir: str = "logs"):
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
     
+    # Clear any existing handlers
+    root_logger.handlers.clear()
+    
     # Console handler (INFO and above)
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(simple_formatter)
     
     # Main log file handler with rotation
-    main_log_file = os.path.join(log_dir, 'mccfr_training.log')
     file_handler = logging.handlers.RotatingFileHandler(
         main_log_file,
         maxBytes=100*1024*1024,  # 100MB
@@ -132,7 +153,6 @@ def setup_logging(log_dir: str = "logs"):
     file_handler.addFilter(hostname_filter)  # Add filter to handler
     
     # Error log file
-    error_log_file = os.path.join(log_dir, 'mccfr_errors.log')
     error_handler = logging.handlers.RotatingFileHandler(
         error_log_file,
         maxBytes=50*1024*1024,  # 50MB
@@ -143,7 +163,6 @@ def setup_logging(log_dir: str = "logs"):
     error_handler.addFilter(hostname_filter)  # Add filter to handler
     
     # Performance metrics log
-    perf_log_file = os.path.join(log_dir, 'mccfr_performance.log')
     perf_handler = logging.handlers.RotatingFileHandler(
         perf_log_file,
         maxBytes=50*1024*1024,  # 50MB
@@ -161,8 +180,12 @@ def setup_logging(log_dir: str = "logs"):
     
     # Create performance logger
     perf_logger = logging.getLogger('performance')
+    perf_logger.handlers.clear()  # Clear any existing handlers
     perf_logger.addHandler(perf_handler)
     perf_logger.propagate = False
+    
+    if clear_logs:
+        logging.info(f"Logs cleared - starting fresh logging session")
     
     logging.info(f"Logging initialized on {socket.gethostname()}")
     logging.info(f"Main log: {main_log_file}")
@@ -628,6 +651,11 @@ def extract_cards_from_state(state: pyspiel.State) -> List[int]:
     return cards
 
 
+def reset_debug_counters():
+    """Reset debug counters for a fresh run"""
+    extract_cards_from_state.debug_count = 0
+
+
 def get_round_from_state(state: pyspiel.State) -> int:
     """Extract round number from universal_poker state"""
     info_state = state.information_state_string(state.current_player())
@@ -887,20 +915,6 @@ class RegretMinimizer:
                                             for s in self.avg_strategy_sum[key]]
 
 
-@contextlib.contextmanager
-def suppress_stderr():
-    """Temporarily suppress stderr output (for OpenSpiel warnings)"""
-    old_stderr = sys.stderr
-    try:
-        # Redirect stderr to devnull
-        sys.stderr = open(os.devnull, 'w')
-        yield
-    finally:
-        # Restore stderr
-        sys.stderr.close()
-        sys.stderr = old_stderr
-
-
 class MCCFRPSolver:
     """MCCFR-P Solver with abstraction"""
     
@@ -1038,6 +1052,8 @@ class MCCFRPSolver:
             expected_value = 0.0
             
             for i, action in enumerate(legal_actions):
+                print(legal_actions)
+                print(current_regrets)
                 if current_regrets[i] > self.config.prune_threshold:
                     state_copy = state.clone()
                     state_copy.apply_action(action)
@@ -1113,27 +1129,25 @@ class MCCFRPSolver:
         
         results = []
         
-        # Suppress OpenSpiel warnings during traversal
-        with suppress_stderr():
-            # Update strategies periodically
-            if iteration % self.config.strategy_interval == 0:
-                for player in range(self.config.num_players):
-                    state = self.game.new_initial_state()
-                    self.update_strategy(state, player, rng)
-            
-            # Main MCCFR traversal
+        # Update strategies periodically
+        if iteration % self.config.strategy_interval == 0:
             for player in range(self.config.num_players):
                 state = self.game.new_initial_state()
-                
-                if iteration > self.config.prune_threshold_iterations:
-                    if rng.random() < self.config.prune_probability:
-                        value = self.traverse_with_pruning(state, player, rng)
-                    else:
-                        value = self.traverse(state, player, rng)
+                self.update_strategy(state, player, rng)
+        
+        # Main MCCFR traversal
+        for player in range(self.config.num_players):
+            state = self.game.new_initial_state()
+            
+            if iteration > self.config.prune_threshold_iterations:
+                if rng.random() < self.config.prune_probability:
+                    value = self.traverse_with_pruning(state, player, rng)
                 else:
                     value = self.traverse(state, player, rng)
-                
-                results.append(value)
+            else:
+                value = self.traverse(state, player, rng)
+            
+            results.append(value)
         
         return results
     
@@ -1350,131 +1364,53 @@ class MCCFRPSolver:
             self.logger.error(f"Failed to save strategy: {e}", exc_info=True)
 
 
-def test_minimal_limit_game():
-    """Test minimal limit game configuration"""
-    logger = logging.getLogger("game_creation")
-    
-    # Start with the absolute minimum required parameters
-    game_string = "universal_poker(betting=limit,numPlayers=2)"
-    
-    logger.info(f"Testing minimal config: {game_string}")
-    
-    try:
-        game = pyspiel.load_game(game_string)
-        logger.info(f"Minimal game created successfully: {game}")
-        
-        # Try to get a state to see the format
-        state = game.new_initial_state()
-        
-        # Apply some actions to see cards
-        while state.is_chance_node() and not state.is_terminal():
-            outcomes = state.chance_outcomes()
-            if outcomes:
-                state.apply_action(outcomes[0][0])
-        
-        if state.current_player() >= 0:
-            info_state = state.information_state_string(state.current_player())
-            logger.info(f"Sample info state: {info_state}")
-            
-        return game
-    except Exception as e:
-        logger.error(f"Minimal config failed: {e}")
-        raise
-
-
 def create_limit_holdem_game():
     """Create limit hold'em game using OpenSpiel universal_poker"""
     logger = logging.getLogger("game_creation")
     
-    # Try a simpler configuration first
-    # OpenSpiel should handle limit betting structure automatically
-    game_string = (
-        "universal_poker("
-        "betting=limit,"
-        "numPlayers=2,"
-        "numRounds=4,"
-        "blind=50 100,"  # Small blind = 50, Big blind = 100
-        "firstPlayer=2 1 1 1,"  # Dealer acts first preflop, BB acts first postflop
-        "numSuits=4,"
-        "numRanks=13,"
-        "numHoleCards=2,"
-        "numBoardCards=0 3 1 1,"  # No cards preflop, 3 on flop, 1 turn, 1 river
-        "stack=20000 20000"  # 200 big blinds each
-        ")"
-    )
+    logger.info("Creating limit hold'em game")
     
-    logger.info(f"Creating game with: {game_string}")
-    
-    try:
-        game = pyspiel.load_game(game_string)
-    except Exception as e:
-        logger.warning(f"Failed with simple config: {e}")
-        logger.info("Trying with explicit betting parameters...")
-        
-        # Try with explicit parameters if the simple version fails
-        game_string = (
-            "universal_poker("
-            "betting=limit,"
-            "numPlayers=2,"
-            "numRounds=4,"
-            "blind=50 100,"
-            "firstPlayer=2 1 1 1,"
-            "numSuits=4,"
-            "numRanks=13,"
-            "numHoleCards=2,"
-            "numBoardCards=0 3 1 1,"
-            "stack=20000 20000,"
-            "raiseSize=100 100 200 200,"  # Small bet pre/flop, big bet turn/river
-            "maxRaises=3 3 3 3"  # Max 3 raises per street
-            ")"
-        )
-        
-        logger.info(f"Creating game with: {game_string}")
-        game = pyspiel.load_game(game_string)
+    CUSTOM_LIMIT_HOLDEM_ACPC_GAMEDEF = """\
+GAMEDEF
+limit
+numPlayers = 2
+numRounds = 1
+blind = 2 4
+raiseSize = 4 4 8
+firstPlayer = 1
+maxRaises = 2 2 2
+numSuits = 4
+numRanks = 13
+numHoleCards = 2
+numBoardCards = 0 3 1 1
+stack = 200
+END GAMEDEF
+"""
+    universal_poker = pyspiel.universal_poker
+    game = universal_poker.load_universal_poker_from_acpc_gamedef(CUSTOM_LIMIT_HOLDEM_ACPC_GAMEDEF)
     
     # Log game information
     logger.info(f"Game created: {game}")
     logger.info(f"Number of players: {game.num_players()}")
     logger.info(f"Number of distinct actions: {game.num_distinct_actions()}")
-    logger.info(f"Max utility: {game.max_utility()}")
-    logger.info(f"Min utility: {game.min_utility()}")
     
-    # Test that we can create initial state
+    # Test initial state
     state = game.new_initial_state()
-    logger.debug(f"Initial state created successfully")
-    
-    # Suppress the MAX_NUM_ACTIONS warnings from OpenSpiel
-    import warnings
-    warnings.filterwarnings("ignore", message=".*MAX_NUM_ACTIONS.*")
+    logger.debug("Initial state created successfully")
     
     return game
 
-
-
 def main():
     """Main training script"""
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description="MCCFR-P Training for Texas Hold'em")
-    parser.add_argument("--game", choices=["limit", "nolimit"], default="limit",
-                      help="Game type: limit or nolimit (default: limit)")
-    parser.add_argument("--iterations", type=int, default=None,
-                      help="Maximum iterations to run (default: run indefinitely)")
-    args = parser.parse_args()
     
     # Setup logging first
     setup_logging()
     
     logger = logging.getLogger("main")
-    logger.info("=" * 80)
-    logger.info(f"MCCFR-P Training for {args.game.capitalize()} Hold'em")
-    logger.info("=" * 80)
-    
-    # Configuration
-    # Batch size for iterations
-    batch_size = 8  # Run 8 iterations per batch
+    logger.info(f"MCCFR-P Training for Limit Hold'em")
     
     config = Config(
-        num_processes=batch_size,  # Using num_processes for backward compatibility
+        num_processes=mp.cpu_count(),  # Using num_processes for backward compatibility
         prune_threshold=-30000.0,
         strategy_interval=1000,
         discount_interval=10000,
@@ -1484,10 +1420,6 @@ def main():
         num_players=2
     )
     
-    logger.info("Configuration:")
-    for key, value in config.__dict__.items():
-        logger.info(f"  {key}: {value}")
-    
     # System information
     logger.info("\nSystem Information:")
     logger.info(f"  Hostname: {socket.gethostname()}")
@@ -1495,65 +1427,20 @@ def main():
     logger.info(f"  Total memory: {psutil.virtual_memory().total / (1024**3):.1f} GB")
     logger.info(f"  Available memory: {psutil.virtual_memory().available / (1024**3):.1f} GB")
     
-    # Create game based on command line argument
-    logger.info(f"\nCreating {args.game} game...")
-    try:
-        # First test minimal configuration
-        logger.info("Testing minimal game configuration first...")
-        test_game = test_minimal_limit_game()
-        logger.info("Minimal test passed, creating full game...")
-        
-        if args.game == "nolimit":
-            game = create_nolimit_holdem_game()
-        else:
-            game = create_limit_holdem_game()
-        logger.info(f"Game created: {game}")
-    except Exception as e:
-        logger.error(f"Failed to create game: {e}", exc_info=True)
-        return
-    except Exception as e:
-        logger.error(f"Failed to create game: {e}")
-        return
+    game = create_limit_holdem_game()
     
     # Create abstraction manager
     logger.info("\nLoading abstractions...")
     
     # Ensure data directory exists in current folder
-    data_dir = "data"
-    os.makedirs(data_dir, exist_ok=True)
-    
-    # Check what game we're using
-    game_name = str(game).lower()
-    using_holdem = "universal_poker" in game_name
-    
-    if not using_holdem:
-        logger.warning(f"Not using Hold'em - using {game} instead")
-        logger.warning("Abstractions won't apply, but MCCFR-P algorithm will still work")
-        logger.info("This is useful for testing the solver implementation")
-    
+    data_dir = "data"    
+
     # Check if abstraction files exist
     abstraction_files = {
         "flop": os.path.join(data_dir, "flop_kmeans.csv"),
         "turn": os.path.join(data_dir, "turn_kmeans.csv"),
         "river": os.path.join(data_dir, "river_kmeans.csv")
     }
-    
-    missing_files = []
-    for round_name, filepath in abstraction_files.items():
-        if not os.path.exists(filepath):
-            missing_files.append(f"{round_name}: {filepath}")
-    
-    if missing_files and using_holdem:
-        logger.warning("Missing abstraction files:")
-        for missing in missing_files:
-            logger.warning(f"  - {missing}")
-        logger.info(f"\nThe solver will use dummy abstractions (cluster 0) for missing rounds.")
-        logger.info(f"To use proper abstractions, place the following CSV files in the {data_dir}/ directory:")
-        logger.info("  - flop_kmeans.csv (1,286,792 entries)")
-        logger.info("  - turn_kmeans.csv (55,190,538 entries)")
-        logger.info("  - river_kmeans.csv (2,428,287,420 entries)")
-        logger.info("\nPreflop uses direct indexing (169 buckets) - no CSV needed")
-        logger.info("\nThe solver will still work but convergence may be slower without abstractions.")
     
     abstraction = AbstractionManager(
         abstraction_files["flop"],
@@ -1565,22 +1452,11 @@ def main():
     logger.info("\nInitializing solver...")
     solver = MCCFRPSolver(game, abstraction, config)
     
-    # Train indefinitely (until stopped) or for specified iterations
-    if args.iterations:
-        logger.info(f"\nStarting training for {args.iterations:,} iterations... (Press Ctrl+C to stop early)")
-    else:
-        logger.info("\nStarting training... (Press Ctrl+C to stop)")
-    logger.info("=" * 80)
-    
-    try:
-        solver.train(max_iterations=args.iterations)
-    except Exception as e:
-        logger.error("Training failed with exception", exc_info=True)
-        raise
+    solver.train(np.inf)
     
     # Save final strategy
     logger.info("\nSaving final strategy...")
-    strategy_file = f"{args.game}_holdem_strategy.pkl.gz"
+    strategy_file = f"limit_holdem_strategy.pkl.gz"
     solver.save_strategy(strategy_file)
     
     # Final statistics
@@ -1596,7 +1472,6 @@ def main():
     logger.info("\nOutput files:")
     logger.info(f"  Strategy: {strategy_file}")
     logger.info(f"  Checkpoint: {os.path.join(config.checkpoint_dir, 'mccfr_checkpoint.pkl.gz')}")
-
 
 if __name__ == "__main__":
     main()

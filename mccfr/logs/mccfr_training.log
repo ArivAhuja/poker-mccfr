@@ -1,0 +1,137 @@
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Logs cleared - starting fresh logging session
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Logging initialized on Arivs-MacBook-Pro.local
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Main log: logs/mccfr_training.log
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Error log: logs/mccfr_errors.log
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance log: logs/mccfr_performance.log
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - MCCFR-P Training for Limit Hold'em
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - 
+System Information:
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main -   Hostname: Arivs-MacBook-Pro.local
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main -   CPU count: 12
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main -   Total memory: 16.0 GB
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main -   Available memory: 1.3 GB
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - game_creation - Creating limit hold'em game
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - game_creation - Game created: universal_poker(betting=limit,blind=1 2,firstPlayer=1 1,maxRaises=2 2,numBoardCards=0 3,numHoleCards=2,numPlayers=2,numRanks=4,numRounds=2,numSuits=2,raiseSize=2 2,stack=20 20)
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - game_creation - Number of players: 2
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - game_creation - Number of distinct actions: 3
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - DEBUG - game_creation - Initial state created successfully
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - 
+Initializing solver...
+2025-06-16 13:43:29 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Initializing MCCFR-P Solver
+2025-06-16 13:43:30 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - RegretMinimizer - RegretMinimizer initialized
+2025-06-16 13:43:30 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Solver initialized with batch size 12
+2025-06-16 13:43:30 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Starting MCCFR-P training (sequential mode)
+2025-06-16 13:43:30 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - No checkpoint found, starting fresh
+2025-06-16 13:43:42 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 3,000 | Speed: 242.5 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 9,833
+2025-06-16 13:43:42 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:43:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 6,000 | Speed: 230.1 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 13,183
+2025-06-16 13:43:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:44:08 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 9,000 | Speed: 230.8 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 14,700
+2025-06-16 13:44:08 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:44:22 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 12,000 | Speed: 212.9 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 15,419
+2025-06-16 13:44:22 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:44:37 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 15,000 | Speed: 204.6 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 15,836
+2025-06-16 13:44:37 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:44:52 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 18,000 | Speed: 204.1 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,072
+2025-06-16 13:44:52 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:45:07 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 21,000 | Speed: 199.6 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,287
+2025-06-16 13:45:07 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:45:22 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 24,000 | Speed: 201.2 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,399
+2025-06-16 13:45:22 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:45:37 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 27,000 | Speed: 198.9 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,496
+2025-06-16 13:45:37 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:45:52 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - RegretMinimizer - Applying discount factor: 0.7500
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 30,000 | Speed: 174.0 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,555
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - === Detailed Statistics ===
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Sample info states:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 8][Money: 2147483643 2147483643][Private: 5d5c][Public: 4d3d2c][Sequences: rc|c]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(5.819336605172108), np.float64(-9.930663394827892)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 0][Pot: 16][Money: 2147483641 2147483639][Private: 3c2c][Public: 5d4d3d][Sequences: rrc|cr]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(0.8006860953579547), np.float64(-18.699313904642047), np.float64(15.800686095357953)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 20][Money: 2147483637 2147483639][Private: 2d2c][Public: 5d5c3d][Sequences: rrc|crr]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(0.75), np.float64(-8.25)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 0][Pot: 12][Money: 2147483643 2147483641][Private: 4d2d][Public: 5d3d3c][Sequences: crc|cr]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(7.463521416898916), np.float64(-9.036478583101083), np.float64(-7.536478583101084)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 0][Pot: 8][Money: 2147483645 2147483643][Private: 4d3d][Public: 5c3c2c][Sequences: cc|cr]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(3.585037274608217), np.float64(2.0850372746082173), np.float64(-14.414962725391783)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 0][Pot: 12][Money: 2147483643 2147483641][Private: 5c4d][Public: 5d3d3c][Sequences: rc|cr]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-5.0), np.float64(2.5), np.float64(2.5)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 0][Pot: 16][Money: 2147483641 2147483639][Private: 5c4d][Public: 5d3d2d][Sequences: rc|rr]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-49.94805194805194), np.float64(11.551948051948052)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 12][Money: 2147483641 2147483641][Private: 2d2c][Public: 5d5c4d][Sequences: crrc|c]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(0.75), np.float64(-3.0)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 16][Money: 2147483639 2147483641][Private: 5d3c][Public: 5c4d3d][Sequences: crc|crr]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-89.25), np.float64(5.25)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 12][Money: 2147483641 2147483641][Private: 4d3c][Public: 5c3d2d][Sequences: rrc|c]:
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(10.262932223086954), np.float64(-22.587067776913045)]
+2025-06-16 13:45:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Saving checkpoint at iteration 30000
+2025-06-16 13:45:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Checkpoint stats - Info states: 16,555, Strategies: 358
+2025-06-16 13:45:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Checkpoint saved to checkpoints/mccfr_checkpoint.pkl.gz (0.3 MB)
+2025-06-16 13:46:10 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 33,000 | Speed: 184.0 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,611
+2025-06-16 13:46:10 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:46:26 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 36,000 | Speed: 196.0 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,667
+2025-06-16 13:46:26 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:46:41 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 39,000 | Speed: 194.1 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,709
+2025-06-16 13:46:41 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:46:56 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 42,000 | Speed: 196.1 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,732
+2025-06-16 13:46:56 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:47:12 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 45,000 | Speed: 191.7 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,756
+2025-06-16 13:47:12 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:47:28 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 48,000 | Speed: 191.9 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,782
+2025-06-16 13:47:28 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:47:44 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 51,000 | Speed: 188.0 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,817
+2025-06-16 13:47:44 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:47:59 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 54,000 | Speed: 188.5 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,854
+2025-06-16 13:47:59 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:48:15 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 57,000 | Speed: 191.6 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,873
+2025-06-16 13:48:15 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 60,000 | Speed: 189.7 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,886
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - === Detailed Statistics ===
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Sample info states:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 8][Money: 2147483643 2147483643][Private: 4d4c][Public: 5d5c2d][Sequences: crc|c]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-67.75), np.float64(3.0)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 12][Money: 2147483641 2147483643][Private: 3d3c][Public: 5d4c2c][Sequences: crc|r]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(1.5), np.float64(-31.5), np.float64(-64.5)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 8][Money: 2147483643 2147483643][Private: 3d3c][Public: 5d4d2c][Sequences: rc|c]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(1.125), np.float64(-28.125)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 0][Pot: 12][Money: 2147483643 2147483641][Private: 4d2c][Public: 5c4c2d][Sequences: crc|cr]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-277.6465097402597), np.float64(-40.146509740259745), np.float64(4.35349025974026)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 0][Pot: 12][Money: 2147483643 2147483641][Private: 4c3d][Public: 5d3c2d][Sequences: rc|cr]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-9.414508053463443), np.float64(11.085491946536564), np.float64(-28.414508053463436)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 20][Money: 2147483637 2147483639][Private: 5c2c][Public: 5d4d2d][Sequences: rrc|crr]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-83.25), np.float64(6.75)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 20][Money: 2147483637 2147483639][Private: 5c4c][Public: 3d3c2c][Sequences: crrc|crr]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-29.0), np.float64(3.0)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 0][Pot: 12][Money: 2147483643 2147483641][Private: 5c3d][Public: 4c3c2d][Sequences: crc|cr]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(9.151330837690578), np.float64(-32.34866916230942), np.float64(-76.84866916230942)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 8][Money: 2147483643 2147483645][Private: 5d3d][Public: 5c4c2d][Sequences: cc|r]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-41.79185642865448), np.float64(3.7081435713455244), np.float64(-4.791856428654476)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -   [Round 1][Player: 1][Pot: 16][Money: 2147483639 2147483641][Private: 4c2d][Public: 4d3d2c][Sequences: crc|crr]:
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver -     Regrets: [np.float64(-5.25), np.float64(5.25)]
+2025-06-16 13:48:31 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Saving checkpoint at iteration 60000
+2025-06-16 13:48:32 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Checkpoint stats - Info states: 16,886, Strategies: 685
+2025-06-16 13:48:32 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Checkpoint saved to checkpoints/mccfr_checkpoint.pkl.gz (0.3 MB)
+2025-06-16 13:48:48 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - root - Performance - Iter: 63,000 | Speed: 175.4 iter/s | Memory: 0.1 GB | CPU: 0.0% | Info States: 16,893
+2025-06-16 13:48:48 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 13:48:53 - Arivs-MacBook-Pro.local - MainProcess[19362] - WARNING - MCCFRPSolver - Shutdown signal received. Saving checkpoint...
+2025-06-16 13:48:53 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Saving checkpoint at iteration 63967
+2025-06-16 13:48:54 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Checkpoint stats - Info states: 16,894, Strategies: 727
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Checkpoint saved to checkpoints/mccfr_checkpoint.pkl.gz (0.3 MB)
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Training stopped at iteration 63,967
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - 
+Saving final strategy...
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Saving strategy to limit_holdem_strategy.pkl.gz
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - MCCFRPSolver - Strategy saved (676 non-uniform info states, 0.0 MB)
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - 
+================================================================================
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - Training Complete!
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - Total iterations: 63,967
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - Total time: 324.9 seconds (0.1 hours)
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - Average speed: 196.9 iterations/second
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - ================================================================================
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main - 
+Output files:
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main -   Strategy: limit_holdem_strategy.pkl.gz
+2025-06-16 13:48:55 - Arivs-MacBook-Pro.local - MainProcess[19362] - INFO - main -   Checkpoint: checkpoints/mccfr_checkpoint.pkl.gz

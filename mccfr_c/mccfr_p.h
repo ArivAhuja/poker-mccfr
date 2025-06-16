@@ -12,9 +12,9 @@
 #include <sstream>
 #include <omp.h>
 
-#include "open_spiel/spiel.h"
-#include "open_spiel/games/universal_poker.h"
-#include "open_spiel/algorithms/cfr.h"
+#include "spiel.h"
+#include "games/universal_poker/universal_poker.h"
+#include "algorithms/cfr.h"
 
 namespace mccfr_p {
 
