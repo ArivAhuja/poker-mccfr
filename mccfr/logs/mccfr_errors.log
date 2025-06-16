@@ -1,0 +1,5 @@
+2025-06-16 16:13:25 - Arivs-MacBook-Pro.local - MainProcess[41367] - ERROR - MCCFRPSolver - Failed to load checkpoint: 'minimizer_state'
+Traceback (most recent call last):
+  File "/Users/ariv_ahuja/Desktop/poker-mccfr/mccfr/mccfr_p_parellel.py", line 846, in load_checkpoint
+    self.minimizer.load_state_dict(checkpoint['minimizer_state'])
+KeyError: 'minimizer_state'

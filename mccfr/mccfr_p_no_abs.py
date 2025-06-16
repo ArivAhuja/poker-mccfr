@@ -801,7 +801,7 @@ END GAMEDEF
 """
     universal_poker = pyspiel.universal_poker
     game = universal_poker.load_universal_poker_from_acpc_gamedef(CUSTOM_LIMIT_HOLDEM_ACPC_GAMEDEF)
-    
+
     # Log game information
     logger.info(f"Game created: {game}")
     logger.info(f"Number of players: {game.num_players()}")
