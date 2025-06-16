@@ -1128,6 +1128,29 @@ class MCCFRPSolver:
         except Exception as e:
             self.logger.error(f"Failed to save strategy: {e}", exc_info=True)
 
+    def save_convergence_history(self, path: str):
+        """Save convergence history to compressed file for analysis"""
+        try:
+            # Prepare convergence data
+            convergence_data = {
+                'convergence_history': self.convergence_history,
+                'iteration': self.iteration,
+                'elapsed_time': time.time() - self.start_time,
+                'config': self.config
+            }
+
+            # Save to compressed file
+            with gzip.open(path, 'wb') as f:
+                pickle.dump(convergence_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+            file_size_mb = os.path.getsize(path) / (1024 ** 2)
+            self.logger.info(
+                f"Convergence history saved \n Total data points: {len(self.convergence_history['iterations'])}"
+            )
+
+        except Exception as e:
+            self.logger.error(f"Failed to save convergence history: {e}", exc_info=True)
+
 
 def main():
     """Main training script"""
@@ -1183,6 +1206,11 @@ def main():
     logger.info("\nSaving final strategy...")
     strategy_file = f"limit_holdem_strategy_parallel.pkl.gz"
     solver.save_strategy(strategy_file)
+
+    # Save convergence history
+    logger.info("\nSaving convergence history...")
+    convergence_history_file = f"limit_holdem_convergence_history.pkl.gz"
+    solver.save_convergence_history(convergence_history_file)
     
     # Final statistics
     elapsed = time.time() - solver.start_time
