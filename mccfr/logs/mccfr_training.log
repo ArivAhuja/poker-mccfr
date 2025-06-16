@@ -475,3 +475,144 @@ Output files:
 2025-06-16 16:16:17 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Checkpoint saved to checkpoints/mccfr_checkpoint.pkl.gz (8.4 MB)
 2025-06-16 16:16:22 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 181,000 | Speed: 69.3 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 184,222
 2025-06-16 16:16:22 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:16:26 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 182,000 | Speed: 219.2 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 185,974
+2025-06-16 16:16:26 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:16:31 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 183,000 | Speed: 219.7 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 187,560
+2025-06-16 16:16:31 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:16:36 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 184,000 | Speed: 218.3 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 189,080
+2025-06-16 16:16:36 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:16:40 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 185,000 | Speed: 219.2 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 190,576
+2025-06-16 16:16:40 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:16:45 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 186,000 | Speed: 217.0 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 192,071
+2025-06-16 16:16:45 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:16:49 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 187,000 | Speed: 220.0 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 193,533
+2025-06-16 16:16:49 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:16:54 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 188,000 | Speed: 218.9 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 194,822
+2025-06-16 16:16:54 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:16:59 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 189,000 | Speed: 213.6 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 196,175
+2025-06-16 16:16:59 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 190,000 | Speed: 212.7 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 197,353
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - === Detailed Statistics ===
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Sample info states:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 135716:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 126876:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [2.0, 0.0, -2.0]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 21558:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 127211:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [1.333333333333333, -2.666666666666667, 7.333333333333333]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 1849:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.8333333333333333, 0.16666666666666652]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 9555:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [3.666666666666667, 1.333333333333334]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 135491:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 33221:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-4.666666666666666, 1.3333333333333335, 3.3333333333333335]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 120318:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0, 0.0]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 114418:
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0]
+2025-06-16 16:17:03 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Saving checkpoint at iteration 190000
+2025-06-16 16:17:11 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Checkpoint stats - Info states: 197,353
+2025-06-16 16:17:14 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Checkpoint saved to checkpoints/mccfr_checkpoint.pkl.gz (9.2 MB)
+2025-06-16 16:17:19 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 191,000 | Speed: 64.8 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 198,509
+2025-06-16 16:17:19 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:23 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 192,000 | Speed: 219.9 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 199,642
+2025-06-16 16:17:23 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:28 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 193,000 | Speed: 211.6 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 200,706
+2025-06-16 16:17:28 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:33 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 194,000 | Speed: 219.1 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 201,751
+2025-06-16 16:17:33 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:37 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 195,000 | Speed: 218.4 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 202,808
+2025-06-16 16:17:37 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:42 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 196,000 | Speed: 220.6 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 203,748
+2025-06-16 16:17:42 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:46 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 197,000 | Speed: 215.3 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 204,648
+2025-06-16 16:17:46 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:51 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 198,000 | Speed: 218.4 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 205,544
+2025-06-16 16:17:51 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:17:55 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 199,000 | Speed: 215.8 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 206,393
+2025-06-16 16:17:55 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 200,000 | Speed: 219.5 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 207,217
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - === Detailed Statistics ===
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Sample info states:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 113390:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 194639:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [1.0, -1.0]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 44905:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.5, 3.5]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 188239:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0, 0.0]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 16122:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0, 0.0]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 51996:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-61.0, 7.0]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 19833:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-6.0, -12.0, 10.0]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 65755:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [1.5, -1.5]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 67668:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-7.0, 9.0]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 110730:
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-1.25, 3.75]
+2025-06-16 16:18:00 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Saving checkpoint at iteration 200000
+2025-06-16 16:18:08 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Checkpoint stats - Info states: 207,217
+2025-06-16 16:18:11 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Checkpoint saved to checkpoints/mccfr_checkpoint.pkl.gz (9.8 MB)
+2025-06-16 16:18:16 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 201,000 | Speed: 62.4 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 208,032
+2025-06-16 16:18:16 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:21 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 202,000 | Speed: 220.5 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 208,870
+2025-06-16 16:18:21 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:25 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 203,000 | Speed: 221.3 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 209,630
+2025-06-16 16:18:25 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:30 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 204,000 | Speed: 221.1 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 210,335
+2025-06-16 16:18:30 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:34 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 205,000 | Speed: 219.0 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 211,091
+2025-06-16 16:18:34 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:39 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 206,000 | Speed: 222.6 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 211,743
+2025-06-16 16:18:39 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:43 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 207,000 | Speed: 219.9 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 212,390
+2025-06-16 16:18:43 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:48 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 208,000 | Speed: 220.9 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 213,002
+2025-06-16 16:18:48 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:52 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 209,000 | Speed: 214.6 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 213,623
+2025-06-16 16:18:52 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 210,000 | Speed: 222.5 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 214,217
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - === Detailed Statistics ===
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Sample info states:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 76414:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 15375:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [7.577109646660799, 3.577109646660798, 11.577109646660798]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 92558:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-27.0, 9.0]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 49093:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-5.0, 7.0]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 126793:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-7.333333333333333, 2.666666666666667, 4.666666666666667]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 13910:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0, 0.0]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 178378:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-7.0, 7.0]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 4673:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-18.0, -22.0, 10.0]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 152957:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [-10.0, 2.0, 2.0]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -   Info state index 82174:
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver -     Regrets: [0.0, 0.0]
+2025-06-16 16:18:57 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Saving checkpoint at iteration 210000
+2025-06-16 16:19:05 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Checkpoint stats - Info states: 214,217
+2025-06-16 16:19:09 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - MCCFRPSolver - Checkpoint saved to checkpoints/mccfr_checkpoint.pkl.gz (10.2 MB)
+2025-06-16 16:19:13 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 211,000 | Speed: 60.5 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 214,785
+2025-06-16 16:19:13 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:19:18 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 212,000 | Speed: 216.4 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 215,335
+2025-06-16 16:19:18 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:19:23 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 213,000 | Speed: 217.5 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 215,888
+2025-06-16 16:19:23 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
+2025-06-16 16:19:27 - Arivs-MacBook-Pro.local - MainProcess[41367] - INFO - root - Performance - Iter: 214,000 | Speed: 217.7 iter/s | Memory: 0.4 GB | CPU: 0.0% | Info States: 216,442
+2025-06-16 16:19:27 - Arivs-MacBook-Pro.local - MainProcess[41367] - WARNING - root - Low available memory: 1.3 GB
