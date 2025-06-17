@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 from poker_engine import SimplifiedPokerEngine, Action, SimplifiedHandEvaluator
-from cfr_interface import AIPlayer, load_cfr_model
+from cfr_interface import FinalAIPlayer, load_cfr_model
 
 # Get the directory where this script is located
 current_dir = Path(__file__).parent
@@ -56,7 +56,7 @@ def new_game():
             print(f"🤖 AI Player initialized - Model loaded: {ai_player.is_model_loaded()}")
         except Exception as e:
             print(f"⚠️  Error loading CFR model: {e}")
-            ai_player = AIPlayer("AI")  # Fallback
+            ai_player = FinalAIPlayer("AI")  # Fallback
         
         # Start new hand
         player_names = ["You", "AI"]
