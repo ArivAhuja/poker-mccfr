@@ -101,6 +101,49 @@
             color: #4CAF50;
         }
 
+        .session-stats {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .session-stats h4 {
+            margin-bottom: 15px;
+            color: #E3F2FD;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .stat-value.positive {
+            color: #4CAF50;
+        }
+
+        .stat-value.negative {
+            color: #f44336;
+        }
+
+        .stat-value.neutral {
+            color: #FFC107;
+        }
+
         .poker-table {
             background: #0a5d0a;
             border: 8px solid #8B4513;
@@ -159,6 +202,12 @@
             color: #666;
         }
 
+        .ai-cards-hidden .card {
+            background: #333 !important;
+            color: #666 !important;
+            border: 2px solid #555 !important;
+        }
+
         .player-area {
             display: flex;
             justify-content: space-between;
@@ -201,6 +250,27 @@
             font-size: 1em;
             margin-bottom: 15px;
             color: #FF6B6B;
+        }
+
+        .hand-toggle {
+            background: rgba(156, 39, 176, 0.2);
+            border: 1px solid #9C27B0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .hand-toggle:hover {
+            background: rgba(156, 39, 176, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .hand-toggle.active {
+            background: rgba(156, 39, 176, 0.6);
+            border-color: #E1BEE7;
         }
 
         .pot-info {
@@ -491,6 +561,24 @@
             </div>
         </div>
 
+        <div class="session-stats">
+            <h4>📊 Session Statistics</h4>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div>Hands Played</div>
+                    <div class="stat-value neutral" id="hands-played">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Your Win Rate</div>
+                    <div class="stat-value neutral" id="win-rate">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div>AI Win Rate</div>
+                    <div class="stat-value neutral" id="ai-win-rate">0%</div>
+                </div>
+            </div>
+        </div>
+
         <div class="game-area">
             <div id="loading" class="loading">
                 <div class="spinner"></div>
@@ -518,7 +606,10 @@
                             <h3>🤖 CFR AI</h3>
                             <div class="chips">Chips: $<span id="ai-chips">20</span></div>
                             <div class="bet">Bet: $<span id="ai-bet">0</span></div>
-                            <div class="cards-container" id="ai-cards">
+                            <div class="hand-toggle" id="ai-hand-toggle" onclick="toggleAIHand()">
+                                👁️ Show AI Hand
+                            </div>
+                            <div class="cards-container ai-cards-hidden" id="ai-cards">
                                 <div class="card empty">?</div>
                                 <div class="card empty">?</div>
                             </div>
@@ -587,7 +678,8 @@
                             <span>C</span> Call/Check • 
                             <span>B</span> Bet • 
                             <span>R</span> Raise • 
-                            <span>N</span> New Hand
+                            <span>N</span> New Hand •
+                            <span>H</span> Toggle AI Hand
                         </p>
                     </div>
 
@@ -605,6 +697,12 @@
         let gameState = null;
         let gameSession = null;
         let debugMode = false;
+        let showAIHand = false;
+        let sessionStats = {
+            handsPlayed: 0,
+            playerWins: 0,
+            aiWins: 0
+        };
 
         // API endpoint
         const API_BASE = '';
@@ -649,11 +747,18 @@
                 const result = await apiCall('/api/new_game', 'POST', {
                     small_blind: 1,
                     big_blind: 2,
-                    starting_chips: 20  // Simplified game starting chips
+                    starting_chips: 20
                 });
                 
                 gameState = result.game_state;
                 gameSession = result.session;
+                
+                // Reset session stats when starting a completely new game
+                sessionStats = {
+                    handsPlayed: 0,
+                    playerWins: 0,
+                    aiWins: 0
+                };
                 
                 updateDisplay();
                 updateActionButtons(result.valid_actions);
@@ -681,6 +786,11 @@
                 
                 gameState = result.game_state;
                 gameSession = result.session;
+                
+                // Update session stats based on actual game session data
+                sessionStats.playerWins = gameSession.player_wins;
+                sessionStats.aiWins = gameSession.ai_wins;
+                sessionStats.handsPlayed = gameSession.hand_count - 1; // hand_count is current hand, we want completed hands
                 
                 updateDisplay();
                 updateActionButtons(result.valid_actions);
@@ -771,6 +881,9 @@
             document.getElementById('ai-wins').textContent = gameSession.ai_wins;
             document.getElementById('hand-count').textContent = gameSession.hand_count;
             
+            // Update session statistics
+            updateSessionStats();
+            
             // Update pot and street
             document.getElementById('pot-amount').textContent = gameState.pot;
             document.getElementById('current-street').textContent = gameState.current_street;
@@ -802,9 +915,16 @@
                 
                 if (i < player.hole_cards.length) {
                     const cardData = player.hole_cards[i];
-                    card.textContent = formatCard(cardData);
-                    if (isRedSuit(cardData.suit)) {
-                        card.classList.add('red');
+                    
+                    // For AI cards, check if we should show them
+                    if (prefix === 'ai' && !showAIHand) {
+                        card.textContent = '?';
+                        card.classList.add('empty');
+                    } else {
+                        card.textContent = formatCard(cardData);
+                        if (isRedSuit(cardData.suit)) {
+                            card.classList.add('red');
+                        }
                     }
                 } else {
                     card.classList.add('empty');
@@ -812,6 +932,15 @@
                 }
                 
                 cardsContainer.appendChild(card);
+            }
+            
+            // Update AI cards container class based on show/hide state
+            if (prefix === 'ai') {
+                if (showAIHand) {
+                    cardsContainer.classList.remove('ai-cards-hidden');
+                } else {
+                    cardsContainer.classList.add('ai-cards-hidden');
+                }
             }
         }
 
@@ -890,6 +1019,45 @@
                 statusEl.className = 'cfr-status failed';
                 textEl.textContent = '⚠️ Using fallback AI strategy (no trained model found)';
             }
+        }
+
+        function toggleAIHand() {
+            showAIHand = !showAIHand;
+            const toggleBtn = document.getElementById('ai-hand-toggle');
+            
+            if (showAIHand) {
+                toggleBtn.textContent = '🙈 Hide AI Hand';
+                toggleBtn.classList.add('active');
+            } else {
+                toggleBtn.textContent = '👁️ Show AI Hand';
+                toggleBtn.classList.remove('active');
+            }
+            
+            // Update the display to show/hide AI cards
+            if (gameState && gameState.players[1]) {
+                updatePlayer(gameState.players[1], 'ai');
+            }
+        }
+
+        function updateSessionStats() {
+            // Update hands played
+            document.getElementById('hands-played').textContent = sessionStats.handsPlayed;
+            
+            // Calculate win rates
+            const playerWinRate = sessionStats.handsPlayed > 0 ? 
+                Math.round((sessionStats.playerWins / sessionStats.handsPlayed) * 100) : 0;
+            const aiWinRate = sessionStats.handsPlayed > 0 ? 
+                Math.round((sessionStats.aiWins / sessionStats.handsPlayed) * 100) : 0;
+            
+            document.getElementById('win-rate').textContent = `${playerWinRate}%`;
+            document.getElementById('ai-win-rate').textContent = `${aiWinRate}%`;
+            
+            // Color code win rates
+            const playerWinRateEl = document.getElementById('win-rate');
+            const aiWinRateEl = document.getElementById('ai-win-rate');
+            
+            playerWinRateEl.className = 'stat-value ' + (playerWinRate > 50 ? 'positive' : playerWinRate < 50 ? 'negative' : 'neutral');
+            aiWinRateEl.className = 'stat-value ' + (aiWinRate > 50 ? 'positive' : aiWinRate < 50 ? 'negative' : 'neutral');
         }
 
         function showAIStrategy(strategy) {
@@ -979,15 +1147,15 @@
 
         // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
-            if (!gameState || gameState.game_over) return;
-            
             switch(e.key.toLowerCase()) {
                 case 'f':
+                    if (!gameState || gameState.game_over) return;
                     if (document.getElementById('fold-btn').style.display !== 'none') {
                         makeAction('fold');
                     }
                     break;
                 case 'c':
+                    if (!gameState || gameState.game_over) return;
                     if (document.getElementById('call-btn').style.display !== 'none') {
                         makeAction('call');
                     } else if (document.getElementById('check-btn').style.display !== 'none') {
@@ -995,17 +1163,22 @@
                     }
                     break;
                 case 'b':
+                    if (!gameState || gameState.game_over) return;
                     if (document.getElementById('bet-btn').style.display !== 'none') {
                         makeAction('bet');
                     }
                     break;
                 case 'r':
+                    if (!gameState || gameState.game_over) return;
                     if (document.getElementById('raise-btn').style.display !== 'none') {
                         makeAction('raise');
                     }
                     break;
                 case 'n':
                     startNewHand();
+                    break;
+                case 'h':
+                    toggleAIHand();
                     break;
             }
         });
