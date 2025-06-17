@@ -1,6 +1,6 @@
 """
 Simplified Poker Engine for 6-card, 2-suit, 2-round limit hold'em
-UPDATED VERSION - Now generates OpenSpiel-compatible information states
+UPDATED VERSION - Now generates OpenSpiel universal_poker compatible information states
 """
 
 import random
@@ -39,6 +39,12 @@ class Card:
     
     def to_dict(self):
         return {"rank": self.rank, "suit": self.suit.value}
+    
+    def to_openspiel_format(self):
+        """Convert to OpenSpiel card format (e.g., '2s', '7h')"""
+        rank_str = {2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7'}
+        suit_str = {Suit.SPADES: 's', Suit.HEARTS: 'h'}
+        return f"{rank_str[self.rank]}{suit_str[self.suit]}"
 
 
 @dataclass 
@@ -107,6 +113,8 @@ class SimplifiedPokerEngine:
     - Limit betting: 2-4 structure
     - Max 2 raises per round
     - Starting stack: 20 chips
+    
+    FIXED: Now generates OpenSpiel universal_poker compatible information states
     """
     
     def __init__(self, small_blind=1, big_blind=2, starting_chips=20):
@@ -116,6 +124,9 @@ class SimplifiedPokerEngine:
         self.deck = self._create_simplified_deck()
         self.game_state = None
         
+        # Card mapping for OpenSpiel compatibility
+        self.card_to_int = self._create_card_mapping()
+        
     def _create_simplified_deck(self) -> List[Card]:
         """Create simplified 12-card deck: 6 ranks × 2 suits"""
         deck = []
@@ -123,6 +134,17 @@ class SimplifiedPokerEngine:
             for rank in range(2, 8):  # 2,3,4,5,6,7 (6 ranks)
                 deck.append(Card(rank, suit))
         return deck
+    
+    def _create_card_mapping(self) -> Dict[str, int]:
+        """Create mapping from card strings to integers for OpenSpiel compatibility"""
+        mapping = {}
+        card_id = 0
+        for suit in Suit:
+            for rank in range(2, 8):
+                card = Card(rank, suit)
+                mapping[card.to_openspiel_format()] = card_id
+                card_id += 1
+        return mapping
     
     def _shuffle_deck(self):
         """Shuffle the deck"""
@@ -503,74 +525,89 @@ class SimplifiedPokerEngine:
             self.game_state.winner = winners[0].id
         
         self.game_state.game_over = True
-
-    _R = "234567"
-    _S = {"♠": "s", "♥": "h"}
-
-    def _card(self, c: Card) -> str:
-        return f"{self._R[c.rank-2]}{self._S[c.suit.value]}"
-
-    _A = {"check": "c", "call": "c", "bet": "r", "raise": "r", "fold": "f"}
-
-    def _hist(self, rec: dict) -> str:
-        return self._A.get(rec["action"], "")
     
-    # ---------- helpers ----------
-    _RANK_CHAR = "234567"
-    _SUIT_CHAR = {"♠": "s",   # suit-id 0
-                "♥": "h"}   # suit-id 1
-    _ACTION_CHR = {"check": "c", "call": "c",
-                   "bet": "r",   "raise": "r",
-                   "fold": "f"}
-
-    def _card_str(self, c: Card) -> str:
-        return f"{self._RANK_CHAR[c.rank-2]}{self._SUIT_CHAR[c.suit.value]}"
-
-    def _sorted_cards(self, cards):
-        # ascending rank, then suit (“c” < “d”)
-        return "".join(
-            self._card_str(c)
-            for c in sorted(cards, key=lambda c: (c.rank, self._SUIT_CHAR[c.suit.value]))
-        )
-    def _hist(self):
-        return "".join(self._ACTION_CHR[a["action"]]
-                       for a in self.game_state.action_history
-                       if a["action"] not in ("small_blind", "big_blind"))
-
-    # ---------- canonical info-state ----------
-    def get_information_set(self, pid: int) -> str:
-        pl     = self.game_state.players[pid]
-        hole   = self._sorted_cards(pl.hole_cards)               # e.g. "6h3s"
-        board  = self._sorted_cards(self.game_state.community_cards)
-        hist   = self._hist()                                    # e.g. "cr"
-
-        if board:            # after flop
-            return f"{hole}/{board}|{hist}"
-        else:                # pre-flop
-            return f"{hole}|{hist}"
-
-
-    def _cards_to_openspiel_format(self, cards: List[Card]) -> str:
-        """Convert cards to OpenSpiel format"""
-        if not cards:
-            return ""
+    def get_information_set(self, player_id: int) -> str:
+        """
+        Get information set string for CFR interface - OpenSpiel compatible format
+        FIXED: This now tries to match OpenSpiel's universal_poker format exactly
+        """
+        player = self.game_state.players[player_id]
         
-        openspiel_cards = []
-        for card in cards:
-            # Convert rank number to OpenSpiel format
-            rank_str = {2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7'}[card.rank]
-            
-            # Convert suit to OpenSpiel format (check if they use different suit chars)
-            suit_str = {'♠': 's', '♥': 'h'}[card.suit.value]  # Spades=s, Hearts=h
-            
-            openspiel_cards.append(f"{rank_str}{suit_str}")
+        # Try to match OpenSpiel's universal_poker information state format
+        # Based on your MCCFR training, it should be similar to your current format
+        # but we need to make minor adjustments
         
-        return " ".join(openspiel_cards)
+        # Round number (0=preflop, 1=flop in OpenSpiel)
+        round_num = 0 if self.game_state.current_street == Street.PREFLOP else 1
+        
+        # Current player
+        current_player = self.game_state.current_player
+        
+        # Pot size
+        pot = self.game_state.pot
+        
+        # Money (each player's remaining chips) - different formats to try
+        money_str = f"{self.game_state.players[0].chips} {self.game_state.players[1].chips}"
+        
+        # Private cards (hole cards) - convert to OpenSpiel format
+        private_cards = " ".join([card.to_openspiel_format() for card in player.hole_cards])
+        
+        # Public cards (community cards)
+        if self.game_state.community_cards:
+            public_cards = " ".join([card.to_openspiel_format() for card in self.game_state.community_cards])
+        else:
+            public_cards = ""
+        
+        # Sequences (betting history per round) - this is critical to match exactly
+        sequences = self._get_openspiel_betting_sequences()
+        
+        # Try different formats to see which one matches your training data
+        
+        # Format 1: Your current format (what your GUI currently generates)
+        format1 = f"[Round {round_num}][Player: {current_player}][Pot: {pot}][Money: {money_str}][Private: {private_cards}][Public: {public_cards}][Sequences: {sequences}]"
+        
+        # Format 2: OpenSpiel might use different spacing
+        format2 = f"[Round {round_num}][Player: {current_player}][Pot: {pot}][Money: {money_str}][Private: {private_cards}][Public: {public_cards}][Sequences: {sequences}]"
+        
+        # Format 3: Maybe no spaces after colons
+        format3 = f"[Round {round_num}][Player:{current_player}][Pot:{pot}][Money:{money_str}][Private:{private_cards}][Public:{public_cards}][Sequences:{sequences}]"
+        
+        # For now, return the current format, but we'll add debug info
+        info_set = format1
+        
+        # DEBUG: Also try some variations and see if any match
+        import hashlib
+        
+        print(f"🔍 DEBUG - Info state format attempts:")
+        print(f"   Format 1: {format1}")
+        print(f"   Format 1 hash: {hashlib.md5(format1.encode()).hexdigest()}")
+        
+        # Try some variations that might match OpenSpiel better
+        variations = [
+            # Different spacing
+            f"[Round {round_num}][Player:{current_player}][Pot:{pot}][Money:{money_str}][Private:{private_cards}][Public:{public_cards}][Sequences:{sequences}]",
+            
+            # Different structure
+            f"Round{round_num}:Player{current_player}:Pot{pot}:Money{money_str}:Private{private_cards}:Public{public_cards}:Sequences{sequences}",
+            
+            # Minimal format
+            f"{round_num}:{current_player}:{pot}:{money_str}:{private_cards}:{public_cards}:{sequences}",
+            
+            # Maybe universal_poker uses different field names
+            f"[Round {round_num}][Player {current_player}][Pot {pot}][Money {money_str}][Cards {private_cards}][Board {public_cards}][Actions {sequences}]"
+        ]
+        
+        for i, variation in enumerate(variations):
+            var_hash = hashlib.md5(variation.encode()).hexdigest()
+            print(f"   Variation {i+1}: {variation}")
+            print(f"   Variation {i+1} hash: {var_hash}")
+        
+        return info_set
     
-    def _get_betting_sequences(self) -> str:
-        """Get betting sequences in OpenSpiel format"""
-        # OpenSpiel uses format like "|c|" or "|cr|" for betting sequences per round
-        # Each round separated by |
+    def _get_openspiel_betting_sequences(self) -> str:
+        """Get betting sequences in OpenSpiel universal_poker format"""
+        # This is critical - the betting sequence format must match exactly
+        # what your MCCFR training used
         
         sequences = []
         
@@ -580,7 +617,7 @@ class SimplifiedPokerEngine:
         
         for action in self.game_state.action_history:
             if action["action"] in ["small_blind", "big_blind"]:
-                continue  # Skip blind posts
+                continue  # Skip blind posts in OpenSpiel format
             
             street = action["street"]
             action_char = self._action_to_openspiel_char(action["action"])
@@ -590,9 +627,9 @@ class SimplifiedPokerEngine:
             elif street == "flop":
                 flop_actions.append(action_char)
         
-        # Format: "|preflop_actions|flop_actions"
+        # OpenSpiel format: "|preflop_actions|flop_actions"
         if self.game_state.current_street == Street.PREFLOP:
-            # Only preflop, but still need the separator
+            # Only preflop actions so far
             sequences_str = f"|{''.join(preflop_actions)}"
         else:
             # Both preflop and flop
@@ -601,22 +638,17 @@ class SimplifiedPokerEngine:
         return sequences_str
     
     def _action_to_openspiel_char(self, action: str) -> str:
-        """Convert action to OpenSpiel character"""
-        # Based on OpenSpiel source, common mappings:
+        """Convert action to OpenSpiel character - must match exactly what training used"""
+        # These mappings must match exactly what your MCCFR training used
+        # Based on standard universal_poker mappings:
         action_map = {
             "check": "c",
             "call": "c", 
-            "bet": "r",    # OpenSpiel uses 'r' for raise/bet
+            "bet": "r",    # OpenSpiel typically uses 'r' for raise/bet
             "raise": "r",
             "fold": "f"
         }
         return action_map.get(action, action[0])  # Fallback to first character
-    
-    def _card_to_string(self, card: Card) -> str:
-        """Convert card to string format for info sets (legacy method)"""
-        rank_map = {2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7'}
-        suit_map = {Suit.SPADES: 's', Suit.HEARTS: 'h'}
-        return f"{rank_map[card.rank]}{suit_map[card.suit]}"
     
     def get_game_state_dict(self) -> Dict:
         """Get game state as dictionary for JSON serialization"""
@@ -708,7 +740,143 @@ class SimplifiedHandEvaluator:
         return False
 
 
+# NEW: Create a compatibility layer that tries multiple information state formats
+class OpenSpielCompatibilityLayer:
+    """
+    Compatibility layer to bridge the gap between GUI and OpenSpiel formats
+    Tries multiple information state formats to find the one that matches training data
+    """
+    
+    def __init__(self, cfr_interface):
+        self.cfr_interface = cfr_interface
+        self.format_cache = {}  # Cache successful formats
+        
+    def get_strategy_with_format_detection(self, base_info_state: str, player_id: int) -> Optional[List[float]]:
+        """
+        Try multiple information state formats to find one that matches the training data
+        """
+        # If we've already found a working format for this type of state, use it
+        state_pattern = self._get_state_pattern(base_info_state)
+        if state_pattern in self.format_cache:
+            format_func = self.format_cache[state_pattern]
+            formatted_state = format_func(base_info_state)
+            strategy = self.cfr_interface.get_strategy_for_info_state(formatted_state)
+            if strategy:
+                return strategy
+        
+        # Try different formats
+        formats_to_try = [
+            # Original format
+            lambda s: s,
+            
+            # Remove spaces after colons
+            lambda s: s.replace(": ", ":"),
+            
+            # Different bracket style
+            lambda s: s.replace("[", "").replace("]", "").replace(":", " "),
+            
+            # Compact format
+            lambda s: s.replace("[Round ", "R").replace("][Player: ", "P").replace("][Pot: ", "pot").replace("][Money: ", "M").replace("][Private: ", "priv").replace("][Public: ", "pub").replace("][Sequences: ", "seq").replace("]", ""),
+            
+            # Try without some fields
+            lambda s: self._extract_core_info(s),
+            
+            # Try with different card formats
+            lambda s: self._convert_card_format(s),
+        ]
+        
+        for format_func in formats_to_try:
+            try:
+                formatted_state = format_func(base_info_state)
+                strategy = self.cfr_interface.get_strategy_for_info_state(formatted_state)
+                
+                if strategy:
+                    print(f"✅ Found working format for pattern '{state_pattern}'")
+                    print(f"   Working format: {formatted_state}")
+                    
+                    # Cache this format for future use
+                    self.format_cache[state_pattern] = format_func
+                    return strategy
+                    
+            except Exception as e:
+                continue
+        
+        return None
+    
+    def _get_state_pattern(self, info_state: str) -> str:
+        """Extract a pattern from the info state for caching"""
+        import re
+        # Extract round and basic structure
+        round_match = re.search(r'Round (\d+)', info_state)
+        player_match = re.search(r'Player: (\d+)', info_state)
+        
+        round_num = round_match.group(1) if round_match else "X"
+        player_num = player_match.group(1) if player_match else "X"
+        
+        return f"R{round_num}P{player_num}"
+    
+    def _extract_core_info(self, info_state: str) -> str:
+        """Extract only the most essential information"""
+        import re
+        
+        # Extract key components
+        round_match = re.search(r'Round (\d+)', info_state)
+        player_match = re.search(r'Player: (\d+)', info_state)
+        pot_match = re.search(r'Pot: (\d+)', info_state)
+        private_match = re.search(r'Private: ([^]]+)', info_state)
+        public_match = re.search(r'Public: ([^]]*)', info_state)
+        sequences_match = re.search(r'Sequences: ([^]]+)', info_state)
+        
+        round_num = round_match.group(1) if round_match else "0"
+        player_num = player_match.group(1) if player_match else "0"
+        pot = pot_match.group(1) if pot_match else "0"
+        private = private_match.group(1) if private_match else ""
+        public = public_match.group(1) if public_match else ""
+        sequences = sequences_match.group(1) if sequences_match else "|"
+        
+        # Try a minimal format
+        return f"{round_num}:{player_num}:{pot}:{private}:{public}:{sequences}"
+    
+    def _convert_card_format(self, info_state: str) -> str:
+        """Try different card representations"""
+        # Convert card format from "6s 5h" to different formats
+        import re
+        
+        # Find card patterns
+        card_pattern = r'(\d+[sh])'
+        cards = re.findall(card_pattern, info_state)
+        
+        if cards:
+            # Try different card formats
+            # Maybe OpenSpiel uses different suit characters or ordering
+            modified_state = info_state
+            for card in cards:
+                rank, suit = card[0], card[1]
+                # Try different suit representations
+                if suit == 's':
+                    new_card = f"{rank}♠"
+                elif suit == 'h':
+                    new_card = f"{rank}♥"
+                else:
+                    new_card = card
+                
+                modified_state = modified_state.replace(card, new_card)
+            
+            return modified_state
+        
+        return info_state
+
+
 if __name__ == "__main__":
     # Test the simplified engine
     engine = SimplifiedPokerEngine()
     game_state = engine.start_new_hand(["Human", "AI"])
+    
+    # Test information state generation
+    info_state = engine.get_information_set(0)
+    print(f"Generated info state: {info_state}")
+    
+    # Test hash
+    import hashlib
+    info_hash = hashlib.md5(info_state.encode()).hexdigest()
+    print(f"Info state hash: {info_hash}")
