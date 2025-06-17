@@ -196,9 +196,9 @@ def setup_logging(log_dir: str = "logs", clear_logs: bool = True):
 class Config:
     """Configuration for MCCFR-P solver"""
     # Thresholds for limit poker
-    prune_threshold: float = -30000.0
-    regret_floor: float = -50000.0
-    prune_threshold_iterations: int = 10000
+    prune_threshold: float = -3000.0
+    regret_floor: float = -3200.0
+    prune_threshold_iterations: int = 100000
     
     # Intervals
     strategy_interval: int = 1000
