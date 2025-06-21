@@ -1,4 +1,3 @@
-# mccfr_p_parallel.py - MCCFR-P Implementation with Proper Parallelization
 """
 MCCFR-P (Monte Carlo Counterfactual Regret Minimization with Pruning) 
 implementation for Simplified Limit Texas Hold'em using OpenSpiel universal_poker.
@@ -789,7 +788,7 @@ class MCCFRPSolver:
         total_actions = 0
 
         # Iterate through all information states
-        for info_state, action_regrets in self.minimizer.regrets.items():
+        for info_state, action_regrets in self.minimizer.regret.items():
             # Sum the absolute regret
             for regret in action_regrets:
                 total_regret += abs(regret)

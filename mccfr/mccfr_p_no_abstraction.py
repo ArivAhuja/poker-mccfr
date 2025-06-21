@@ -1,31 +1,22 @@
-# mccfr_p.py - MCCFR-P Implementation with Logging
 """
 MCCFR-P (Monte Carlo Counterfactual Regret Minimization with Pruning) 
-implementation for Limit Texas Hold'em using OpenSpiel universal_poker.
+implementation for Simplified Limit Texas Hold'em using OpenSpiel universal_poker.
 
 This implementation includes:
 - Full MCCFR-P algorithm with pruning and Linear CFR discounting
-- Kevin Waugh's isomorphic hand indexing 
-- Card abstraction support via CSV files
 - Sequential processing (to avoid multiprocessing pickling issues)
 - Comprehensive logging and checkpointing
 
 File Structure (all in the mccfr folder):
 - logs/                         : Training logs and performance metrics
 - checkpoints/                  : Periodic training state saves
-- data/                        : Abstraction CSV files
-  - flop_kmeans.csv            : Flop clusters
-  - turn_kmeans.csv            : Turn clusters  
-  - river_kmeans.csv           : River clusters
 - limit_holdem_strategy.pkl.gz : Final trained strategy
-- example_info_state.txt       : Debug file with game state examples
 
 Note: Preflop uses direct indexing (169 buckets, index = cluster)
 
 Requirements:
 - numpy, pandas, tqdm, psutil
 - open_spiel (install with: pip install open_spiel)
-- Abstraction CSV files for flop/turn/river
 """
 
 # Check required imports first
@@ -289,578 +280,6 @@ class PerformanceMonitor:
         self.last_log_time = current_time
         self.last_iteration = iteration
 
-
-class KevinWaughHandIndexer:
-    """Exact implementation of Kevin Waugh's hand indexer
-    
-    Note: This implementation assumes:
-    - Cards are indexed 0-51 where card = suit * 13 + rank
-    - Suits: spades=0, hearts=1, diamonds=2, clubs=3
-    - Ranks: 2=0, 3=1, ..., K=11, A=12
-    """
-    
-    def __init__(self, rounds: int, cards_per_round: List[int]):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info(f"Initializing hand indexer with {rounds} rounds: {cards_per_round}")
-        
-        self.rounds = rounds
-        self.cards_per_round = cards_per_round
-        self.round_start = []
-        total = 0
-        for cards in cards_per_round:
-            self.round_start.append(total)
-            total += cards
-        
-        # Precompute tables
-        start_time = time.time()
-        self._init_tables()
-        self._init_configurations()
-        
-        init_time = time.time() - start_time
-        self.logger.info(f"Hand indexer initialized in {init_time:.2f} seconds")
-        
-        # Log expected round sizes
-        expected_sizes = {
-            0: 169,        # Preflop (direct indexing)
-            1: 1286792,    # Flop  
-            2: 55190538,   # Turn
-            3: 2428287420  # River
-        }
-        
-        # Log round sizes
-        for i in range(self.rounds):
-            expected = expected_sizes.get(i, "Unknown")
-            actual = self.round_size[i]
-            match = "✓" if expected == actual else "✗"
-            self.logger.info(
-                f"Round {i} size: {actual:,} "
-                f"(expected: {expected:,}) {match}"
-            )
-    
-    def _init_tables(self):
-        """Initialize lookup tables"""
-        self.logger.debug("Initializing lookup tables")
-        
-        # nCr for ranks
-        self.nCr_ranks = np.zeros((RANKS+1, RANKS+1), dtype=np.int64)
-        self.nCr_ranks[0, 0] = 1
-        for i in range(1, RANKS+1):
-            self.nCr_ranks[i, 0] = 1
-            self.nCr_ranks[i, i] = 1
-            for j in range(1, i):
-                self.nCr_ranks[i, j] = self.nCr_ranks[i-1, j-1] + self.nCr_ranks[i-1, j]
-        
-        # nCr for groups (using Python integers for arbitrary precision)
-        self.nCr_groups = [[0 for _ in range(SUITS+1)] for _ in range(MAX_GROUP_INDEX)]
-        self.nCr_groups[0][0] = 1
-        for i in range(1, MAX_GROUP_INDEX):
-            self.nCr_groups[i][0] = 1
-            if i < SUITS+1:
-                self.nCr_groups[i][i] = 1
-            for j in range(1, min(i, SUITS+1)):
-                # Using Python's arbitrary precision integers to avoid overflow
-                self.nCr_groups[i][j] = self.nCr_groups[i-1][j-1] + self.nCr_groups[i-1][j]
-        
-        # Rank set to index
-        self.rank_set_to_index = {}
-        self.index_to_rank_set = defaultdict(dict)
-        
-        for i in range(1 << RANKS):
-            index = 0
-            bits = []
-            for j in range(RANKS):
-                if i & (1 << j):
-                    bits.append(j)
-            
-            for j, bit in enumerate(bits):
-                index += self.nCr_ranks[bit, j+1]
-            
-            self.rank_set_to_index[i] = index
-            popcount = bin(i).count('1')
-            self.index_to_rank_set[popcount][index] = i
-    
-    def _init_configurations(self):
-        """Initialize suit configurations"""
-        self.logger.debug("Initializing suit configurations")
-        
-        self.configurations = [[] for _ in range(self.rounds)]
-        self.configuration_to_offset = [[] for _ in range(self.rounds)]
-        self.configuration_to_suit_size = [[] for _ in range(self.rounds)]
-        self.round_size = [0] * self.rounds
-        
-        # Enumerate configurations for each round
-        for round_num in range(self.rounds):
-            configs = self._enumerate_configurations(round_num)
-            self.configurations[round_num] = configs
-            
-            self.logger.debug(f"Round {round_num}: {len(configs)} configurations")
-            
-            # Calculate offsets and sizes
-            offset = 0
-            for config in configs:
-                self.configuration_to_offset[round_num].append(offset)
-                
-                # Calculate size for this configuration
-                size = 1
-                suit_sizes = []
-                for suit_config in config:
-                    suit_size = 1
-                    remaining = RANKS
-                    for r in range(round_num + 1):
-                        cards = suit_config[r]
-                        suit_size *= self.nCr_ranks[remaining, cards]
-                        remaining -= cards
-                    suit_sizes.append(suit_size)
-                
-                self.configuration_to_suit_size[round_num].append(suit_sizes)
-                
-                # Calculate total size considering suit isomorphisms
-                config_size = self._calculate_configuration_size(config, suit_sizes)
-                offset += config_size
-            
-            self.round_size[round_num] = offset
-    
-    def _enumerate_configurations(self, round_num: int) -> List[List[Tuple[int, ...]]]:
-        """Enumerate all valid suit configurations for a round"""
-        configs = []
-        
-        def enumerate_recursive(round_idx, remaining, suit_idx, current_config):
-            if suit_idx == SUITS:
-                if round_idx < round_num:
-                    enumerate_recursive(round_idx + 1, self.cards_per_round[round_idx + 1], 
-                                      0, current_config)
-                else:
-                    # Valid configuration found
-                    configs.append([tuple(suit) for suit in current_config])
-                return
-            
-            min_cards = remaining if suit_idx == SUITS - 1 else 0
-            max_cards = min(remaining, RANKS - sum(current_config[suit_idx]))
-            
-            for cards in range(min_cards, max_cards + 1):
-                current_config[suit_idx].append(cards)
-                enumerate_recursive(round_idx, remaining - cards, suit_idx + 1, current_config)
-                current_config[suit_idx].pop()
-        
-        # Start enumeration
-        initial_config = [[] for _ in range(SUITS)]
-        enumerate_recursive(0, self.cards_per_round[0], 0, initial_config)
-        
-        # Sort configurations lexicographically
-        configs.sort(reverse=True)
-        return configs
-    
-    def _calculate_configuration_size(self, config: List[Tuple[int, ...]], 
-                                    suit_sizes: List[int]) -> int:
-        """Calculate size of a configuration considering suit isomorphisms"""
-        size = 1
-        i = 0
-        while i < SUITS:
-            j = i + 1
-            while j < SUITS and config[j] == config[i]:
-                j += 1
-            
-            # j - i suits are identical
-            num_equal = j - i
-            suit_size = suit_sizes[i]
-            
-            # Use multinomial coefficient
-            size *= self.nCr_groups[suit_size + num_equal - 1][num_equal]
-            i = j
-        
-        return size
-    
-    def index_hand(self, cards: List[int], round_num: int) -> int:
-        """Index a hand up to given round"""
-        if round_num >= self.rounds:
-            round_num = self.rounds - 1
-        
-        # Group cards by suit
-        suits_ranks = [set() for _ in range(SUITS)]
-        
-        card_idx = 0
-        for r in range(round_num + 1):
-            for _ in range(self.cards_per_round[r]):
-                if card_idx >= len(cards):
-                    break
-                card = cards[card_idx]
-                suit = card // RANKS
-                rank = card % RANKS
-                suits_ranks[suit].add(rank)
-                card_idx += 1
-        
-        # Convert to bit representation
-        suits_bits = []
-        for ranks in suits_ranks:
-            bits = 0
-            for rank in ranks:
-                bits |= (1 << rank)
-            suits_bits.append(bits)
-        
-        # Get suit indices
-        suit_indices = []
-        for bits in suits_bits:
-            suit_indices.append(self.rank_set_to_index.get(bits, 0))
-        
-        # Determine configuration
-        config = []
-        for suit_idx in range(SUITS):
-            suit_config = [0] * (round_num + 1)
-            cards_counted = 0
-            for r in range(round_num + 1):
-                cards_this_round = min(len(suits_ranks[suit_idx]) - cards_counted, 
-                                     self.cards_per_round[r])
-                suit_config[r] = cards_this_round
-                cards_counted += cards_this_round
-            config.append(tuple(suit_config))
-        
-        # Find configuration index
-        config_idx = 0
-        for idx, test_config in enumerate(self.configurations[round_num]):
-            if self._configs_match(config, test_config):
-                config_idx = idx
-                break
-        
-        # Calculate final index
-        offset = self.configuration_to_offset[round_num][config_idx]
-        
-        # Sort suits by configuration then by index
-        suit_order = sorted(range(SUITS), 
-                          key=lambda s: (config[s], suit_indices[s]), 
-                          reverse=True)
-        
-        # Calculate index within configuration
-        index_within = 0
-        multiplier = 1
-        
-        for i in range(SUITS):
-            suit = suit_order[i]
-            index_within += suit_indices[suit] * multiplier
-            multiplier *= self.configuration_to_suit_size[round_num][config_idx][i]
-        
-        return offset + index_within
-    
-    def _configs_match(self, config1: List[Tuple[int, ...]], 
-                      config2: List[Tuple[int, ...]]) -> bool:
-        """Check if two configurations match considering suit permutations"""
-        sorted1 = sorted(config1, reverse=True)
-        sorted2 = sorted(config2, reverse=True)
-        return sorted1 == sorted2
-
-
-def parse_card_string(card_str: str) -> int:
-    """Convert card string like '2s' to integer (0-51)
-    
-    OpenSpiel uses this format for universal_poker:
-    - Ranks: 2-9, T, J, Q, K, A (0-12)
-    - Suits: s(pades)=0, h(earts)=1, d(iamonds)=2, c(lubs)=3
-    - Card index = suit * 13 + rank
-    """
-    if not card_str or len(card_str) < 2:
-        return -1
-    
-    rank_char = card_str[0].upper()
-    suit_char = card_str[1].lower()
-    
-    rank_map = {
-        '2': 0, '3': 1, '4': 2, '5': 3, '6': 4,
-        '7': 5, '8': 6, '9': 7, 'T': 8, 'J': 9,
-        'Q': 10, 'K': 11, 'A': 12
-    }
-    
-    suit_map = {'s': 0, 'h': 1, 'd': 2, 'c': 3}
-    
-    if rank_char not in rank_map or suit_char not in suit_map:
-        logging.debug(f"Invalid card string: {card_str}")
-        return -1
-    
-    rank = rank_map[rank_char]
-    suit = suit_map[suit_char]
-    
-    return suit * 13 + rank
-
-
-def extract_cards_from_state(state: pyspiel.State) -> List[int]:
-    """Extract cards from OpenSpiel universal_poker state"""
-    info_state = state.information_state_string(state.current_player())
-    
-    # Debug logging for first few calls
-    if hasattr(extract_cards_from_state, 'debug_count'):
-        extract_cards_from_state.debug_count += 1
-    else:
-        extract_cards_from_state.debug_count = 1
-    
-    if extract_cards_from_state.debug_count <= 5:
-        logging.debug(f"Info state string: {info_state}")
-    
-    cards = []
-    
-    # Parse private cards for universal_poker
-    private_match = re.search(r'\[Private: ([^\]]+)\]', info_state)
-    if private_match:
-        private_str = private_match.group(1).strip()
-        if private_str and private_str != '-':
-            # Try multiple parsing strategies
-            # Strategy 1: Cards might be space-separated
-            if ' ' in private_str:
-                card_strs = private_str.split()
-                for card_str in card_strs:
-                    card = parse_card_string(card_str)
-                    if card >= 0:
-                        cards.append(card)
-            else:
-                # Strategy 2: Cards might be concatenated
-                i = 0
-                while i < len(private_str):
-                    if i + 1 < len(private_str) and private_str[i+1] in 'shdc':
-                        card = parse_card_string(private_str[i:i+2])
-                        if card >= 0:
-                            cards.append(card)
-                        i += 2
-                    else:
-                        i += 1
-    
-    # Parse public cards for universal_poker
-    public_match = re.search(r'\[Public: ([^\]]+)\]', info_state)
-    if public_match:
-        public_str = public_match.group(1).strip()
-        if public_str and public_str != '-':
-            # Try multiple parsing strategies
-            # Strategy 1: Cards might be space-separated
-            if ' ' in public_str:
-                card_strs = public_str.split()
-                for card_str in card_strs:
-                    card = parse_card_string(card_str)
-                    if card >= 0:
-                        cards.append(card)
-            else:
-                # Strategy 2: Cards might be concatenated
-                i = 0
-                while i < len(public_str):
-                    if i + 1 < len(public_str) and public_str[i+1] in 'shdc':
-                        card = parse_card_string(public_str[i:i+2])
-                        if card >= 0:
-                            cards.append(card)
-                        i += 2
-                    else:
-                        i += 1
-    
-    if extract_cards_from_state.debug_count <= 5:
-        logging.debug(f"Extracted cards: {cards} (count: {len(cards)})")
-    
-    return cards
-
-
-def reset_debug_counters():
-    """Reset debug counters for a fresh run"""
-    extract_cards_from_state.debug_count = 0
-
-
-def get_round_from_state(state: pyspiel.State) -> int:
-    """Extract round number from universal_poker state"""
-    info_state = state.information_state_string(state.current_player())
-    
-    # OpenSpiel uses 1-indexed rounds in the string representation
-    # but we want 0-indexed for our arrays
-    round_match = re.search(r'\[Round (\d+)\]', info_state)
-    if round_match:
-        return int(round_match.group(1)) - 1  # Convert to 0-indexed
-    
-    # If no round found, determine from board cards
-    public_match = re.search(r'\[Public: ([^\]]+)\]', info_state)
-    if public_match:
-        public_str = public_match.group(1).strip()
-        if public_str == '-' or not public_str:
-            return 0  # Preflop
-        
-        # Count cards to determine round
-        card_count = 0
-        i = 0
-        while i < len(public_str):
-            if i + 1 < len(public_str) and public_str[i+1] in 'shdc':
-                card_count += 1
-                i += 2
-            else:
-                i += 1
-        
-        if card_count == 0:
-            return 0  # Preflop
-        elif card_count == 3:
-            return 1  # Flop
-        elif card_count == 4:
-            return 2  # Turn
-        else:
-            return 3  # River
-    
-    return 0  # Default to preflop
-
-
-class AbstractionManager:
-    """Manages card abstractions from CSV files"""
-    
-    def __init__(self, flop_path: str, turn_path: str, river_path: str):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info("Initializing abstraction manager")
-        
-        self.clusters = []
-        # Preflop uses direct indexing (0-168), no CSV needed
-        self.clusters.append(None)  # Preflop placeholder
-        self.clusters.append(self._load_csv(flop_path, "flop"))
-        self.clusters.append(self._load_csv(turn_path, "turn"))
-        self.clusters.append(self._load_csv(river_path, "river"))
-        
-        # Initialize Kevin Waugh hand indexer
-        self.hand_indexer = KevinWaughHandIndexer(
-            rounds=4,
-            cards_per_round=[2, 3, 1, 1]
-        )
-        
-        # Verify sizes
-        expected_sizes = [169, 1286792, 55190538, 2428287420]
-        round_names = ["preflop", "flop", "turn", "river"]
-        
-        # Log round sizes
-        self.logger.info("Round sizes:")
-        # Preflop
-        self.logger.info(f"  Preflop: Direct indexing (169 buckets)")
-        
-        # Other rounds
-        for i in range(1, 4):
-            if self.clusters[i] is not None and len(self.clusters[i]) > 0:
-                actual_size = len(self.clusters[i])
-                expected_size = expected_sizes[i]
-                match = "✓" if expected_size == actual_size else "✗"
-                self.logger.info(
-                    f"  {round_names[i].capitalize()}: Loaded {actual_size:,} clusters "
-                    f"(expected {expected_size:,}) {match}"
-                )
-                if actual_size != expected_size:
-                    self.logger.warning(
-                        f"Size mismatch for {round_names[i]}: "
-                        f"expected {expected_size:,}, got {actual_size:,}"
-                    )
-    
-    def _load_csv(self, path: str, name: str) -> np.ndarray:
-        """Load cluster assignments from CSV"""
-        self.logger.info(f"Loading {name} clusters from {path}")
-        
-        if not os.path.exists(path):
-            self.logger.error(f"Required file not found: {path}")
-            raise FileNotFoundError(f"Missing required abstraction file: {path}")
-        
-        try:
-            df = pd.read_csv(path, header=None)
-            data = df.values.flatten().astype(np.int32)
-            self.logger.info(f"Successfully loaded {len(data):,} {name} clusters")
-            
-            # Validate cluster values
-            unique_clusters = np.unique(data)
-            self.logger.info(
-                f"{name} clusters: min={unique_clusters.min()}, "
-                f"max={unique_clusters.max()}, "
-                f"unique={len(unique_clusters)}"
-            )
-            
-            return data
-        except Exception as e:
-            self.logger.error(f"Error loading {path}: {e}")
-            raise
-    
-    def get_cluster(self, round_num: int, hand_index: int) -> int:
-        """Get cluster for a given round and hand index"""
-        # Preflop: direct indexing
-        if round_num == 0:
-            # For preflop, the hand index IS the cluster (0-168)
-            if 0 <= hand_index < 169:
-                return hand_index
-            else:
-                # Out of bounds for preflop, use random bucket
-                random_cluster = random.randint(0, 168)
-                self.logger.debug(
-                    f"Preflop hand index {hand_index} out of bounds, "
-                    f"using random cluster {random_cluster}"
-                )
-                return random_cluster
-        
-        # Other rounds: use CSV
-        if round_num >= len(self.clusters) or self.clusters[round_num] is None:
-            return 0
-        
-        # If hand_index is out of bounds, pick random row
-        if hand_index < 0 or hand_index >= len(self.clusters[round_num]):
-            random_index = random.randint(0, len(self.clusters[round_num]) - 1)
-            random_cluster = int(self.clusters[round_num][random_index])
-            self.logger.debug(
-                f"Hand index {hand_index} out of bounds for round {round_num} "
-                f"(max: {len(self.clusters[round_num])-1}), "
-                f"using random cluster {random_cluster} from index {random_index}"
-            )
-            return random_cluster
-            
-        return int(self.clusters[round_num][hand_index])
-
-
-class AbstractInfoState:
-    """Information state with abstraction"""
-    
-    def __init__(self, state: pyspiel.State, player: int, 
-                 abstraction: AbstractionManager):
-        self.player = player
-        self.base_info_state = state.information_state_string(player)
-        self.round = get_round_from_state(state)
-        
-        # Extract betting history from the info state
-        self.betting_history = self._extract_betting_history(self.base_info_state)
-        
-        # Extract cards and compute hand index
-        cards = extract_cards_from_state(state)
-        
-        # For preflop, we should have exactly 2 cards
-        # If we have fewer, it might be an issue with card parsing
-        if self.round == 0 and len(cards) < 2:
-            logging.debug(f"Warning: Only {len(cards)} cards found for preflop, expected 2")
-            # Use a default cluster for incomplete information
-            self.cluster = 0
-        elif cards:
-            try:
-                hand_index = abstraction.hand_indexer.index_hand(cards, self.round)
-                self.cluster = abstraction.get_cluster(self.round, hand_index)
-            except Exception as e:
-                logging.debug(f"Hand indexing failed: {e}")
-                self.cluster = 0
-        else:
-            # No cards (e.g., Leduc Poker or no cards dealt yet)
-            self.cluster = 0
-    
-    def _extract_betting_history(self, info_state: str) -> str:
-        """Extract betting history from info state string"""
-        # Look for betting pattern in the info state
-        # This helps distinguish between different betting sequences
-        betting_match = re.search(r'Actions: ([^,\]]+)', info_state)
-        if betting_match:
-            return betting_match.group(1).strip()
-        
-        # Alternative format for some games
-        action_match = re.search(r'Action history: ([^,\]]+)', info_state)
-        if action_match:
-            return action_match.group(1).strip()
-            
-        return ""
-    
-    def __str__(self) -> str:
-        # Include betting history in the abstracted state representation
-        if self.betting_history:
-            return f"r{self.round}_c{self.cluster}_p{self.player}_{self.betting_history}"
-        else:
-            return f"r{self.round}_c{self.cluster}_p{self.player}"
-    
-    def __hash__(self) -> int:
-        return hash(str(self))
-    
-    def __eq__(self, other) -> bool:
-        return str(self) == str(other)
-
-
 class RegretMinimizer:
     """Thread-safe regret and strategy storage"""
     
@@ -916,15 +335,14 @@ class RegretMinimizer:
 
 
 class MCCFRPSolver:
-    """MCCFR-P Solver with abstraction"""
+    """MCCFR-P Solver with no abstraction"""
     
-    def __init__(self, game: pyspiel.Game, abstraction: AbstractionManager,
+    def __init__(self, game: pyspiel.Game,
                  config: Config = Config()):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Initializing MCCFR-P Solver")
         
         self.game = game
-        self.abstraction = abstraction
         self.config = config
         
         # Initialize multiprocessing manager
@@ -992,8 +410,7 @@ class MCCFRPSolver:
             return self.traverse(state, player, rng)
         
         current_player = state.current_player()
-        info_state = AbstractInfoState(state, current_player, self.abstraction)
-        info_state_str = str(info_state)
+        info_state_str = state.information_state_string()
         legal_actions = state.legal_actions()
         
         if current_player == player:
@@ -1035,8 +452,7 @@ class MCCFRPSolver:
             return self.traverse_with_pruning(state, player, rng)
         
         current_player = state.current_player()
-        info_state = AbstractInfoState(state, current_player, self.abstraction)
-        info_state_str = str(info_state)
+        info_state_str = state.information_state_string()
         legal_actions = state.legal_actions()
         
         if current_player == player:
@@ -1052,8 +468,6 @@ class MCCFRPSolver:
             expected_value = 0.0
             
             for i, action in enumerate(legal_actions):
-                print(legal_actions)
-                print(current_regrets)
                 if current_regrets[i] > self.config.prune_threshold:
                     state_copy = state.clone()
                     state_copy.apply_action(action)
@@ -1100,9 +514,7 @@ class MCCFRPSolver:
         current_player = state.current_player()
         
         if current_player == player:
-            info_state = AbstractInfoState(state, current_player, 
-                                         self.abstraction)
-            info_state_str = str(info_state)
+            info_state_str = state.information_state_string()
             legal_actions = state.legal_actions()
             
             strategy = self.get_current_strategy(info_state_str, 
@@ -1364,7 +776,7 @@ class MCCFRPSolver:
             self.logger.error(f"Failed to save strategy: {e}", exc_info=True)
 
 
-def create_limit_holdem_game():
+def create_simple_limit_holdem_game():
     """Create limit hold'em game using OpenSpiel universal_poker"""
     logger = logging.getLogger("game_creation")
     
@@ -1374,21 +786,21 @@ def create_limit_holdem_game():
 GAMEDEF
 limit
 numPlayers = 2
-numRounds = 1
-blind = 2 4
-raiseSize = 4 4 8
+numRounds = 2
+blind = 1 2
+raiseSize = 2 2
 firstPlayer = 1
-maxRaises = 2 2 2
-numSuits = 4
-numRanks = 13
+maxRaises = 2 2
+numSuits = 2
+numRanks = 6
 numHoleCards = 2
-numBoardCards = 0 3 1 1
-stack = 200
+numBoardCards = 0 3
+stack = 20
 END GAMEDEF
 """
     universal_poker = pyspiel.universal_poker
     game = universal_poker.load_universal_poker_from_acpc_gamedef(CUSTOM_LIMIT_HOLDEM_ACPC_GAMEDEF)
-    
+
     # Log game information
     logger.info(f"Game created: {game}")
     logger.info(f"Number of players: {game.num_players()}")
@@ -1427,32 +839,14 @@ def main():
     logger.info(f"  Total memory: {psutil.virtual_memory().total / (1024**3):.1f} GB")
     logger.info(f"  Available memory: {psutil.virtual_memory().available / (1024**3):.1f} GB")
     
-    game = create_limit_holdem_game()
-    
-    # Create abstraction manager
-    logger.info("\nLoading abstractions...")
-    
-    # Ensure data directory exists in current folder
-    data_dir = "data"    
+    game = create_simple_limit_holdem_game()
 
-    # Check if abstraction files exist
-    abstraction_files = {
-        "flop": os.path.join(data_dir, "flop_kmeans.csv"),
-        "turn": os.path.join(data_dir, "turn_kmeans.csv"),
-        "river": os.path.join(data_dir, "river_kmeans.csv")
-    }
-    
-    abstraction = AbstractionManager(
-        abstraction_files["flop"],
-        abstraction_files["turn"],
-        abstraction_files["river"]
-    )
-    
     # Create solver
     logger.info("\nInitializing solver...")
-    solver = MCCFRPSolver(game, abstraction, config)
+    solver = MCCFRPSolver(game, config)
     
-    solver.train(np.inf)
+    # Train until stopped
+    solver.train()
     
     # Save final strategy
     logger.info("\nSaving final strategy...")

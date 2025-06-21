@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Evaluate how close a trained MCCFR-P strategy is to Nash equilibrium.
 Fixed version that handles Config class from training script.
