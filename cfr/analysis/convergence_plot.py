@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Dict, List, Any
-
 from cfr.cfr import BaseCFR, KuhnVanillaCFR, KuhnCFRPlus
 
 def compute_game_value(instance: BaseCFR) -> float:

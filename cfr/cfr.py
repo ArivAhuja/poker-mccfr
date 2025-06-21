@@ -370,7 +370,7 @@ class BaseKuhnCFR:
 
         return kuhn_gui_profile
 
-class KuhnVanillaCFR(BaseKuhnCFR, BaseCFR):
+class KuhnVanillaCFR(BaseKuhnCFR, BaseCFR): 
     """Kuhn Poker with Vanilla CFR"""
 
     def __init__(self):
