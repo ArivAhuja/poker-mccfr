@@ -1,8 +1,8 @@
 import numpy as np
 import pyspiel
-from cfr.cfr import KuhnVanillaCFR
-from cfr.kuhn_poker_gui import KuhnTextGUI, self_play, watch_self_play
-from cfr.test_dls_func import test_depth_detection, test_blueprint_and_continuation,test_create_subgame
+from cfr import KuhnVanillaCFR
+from kuhn_poker_gui import KuhnTextGUI, self_play, watch_self_play
+from test_dls_func import test_depth_detection, test_blueprint_and_continuation,test_create_subgame
 
 def main():
     print("=== Depth-Limited CFR Demonstration ===")
