@@ -383,3 +383,4 @@ class KuhnCFRPlus(BaseKuhnCFR, CFRPlus):
     def __init__(self):
         CFRPlus.__init__(self, num_players=2)
         BaseKuhnCFR.__init__(self)
+
