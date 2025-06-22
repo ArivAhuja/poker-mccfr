@@ -1,37 +1,39 @@
 import pyspiel
 import numpy as np
 from collections import defaultdict
-
-# Load Leduc Poker
-game = pyspiel.load_game("leduc_poker")
-state = game.new_initial_state()
-
-print("Initial state:", state)
-print("Is chance node?", state.is_chance_node())
-print("Current player:", state.current_player())
+import matplotlib.pyplot as plt
 
 
-while not state.is_terminal():
-  legal_actions = state.legal_actions()
-  print("Legal actions", legal_actions)
-#   Deal cards
-  if state.is_chance_node():
-    outcomes_with_probs = state.chance_outcomes()
-    print("Outcome with probs:", outcomes_with_probs)
-    action_list, prob_list = zip(*outcomes_with_probs)
-    action = np.random.choice(action_list, p=prob_list)
-    print("action:", action)
-    state.apply_action(action)
-    print("State:", str(state))
-  else:
-    action = legal_actions[0]
-    print("action", action)
-    state.apply_action(action)
-    print("State:", str(state))
+# # Load Leduc Poker
+# game = pyspiel.load_game("leduc_poker")
+# state = game.new_initial_state()
+
+# print("Initial state:", state)
+# print("Is chance node?", state.is_chance_node())
+# print("Current player:", state.current_player())
 
 
-print("\nFinal state:", state)
-print("Returns:", state.returns())
+# while not state.is_terminal():
+#   legal_actions = state.legal_actions()
+#   print("Legal actions", legal_actions)
+# #   Deal cards
+#   if state.is_chance_node():
+#     outcomes_with_probs = state.chance_outcomes()
+#     print("Outcome with probs:", outcomes_with_probs)
+#     action_list, prob_list = zip(*outcomes_with_probs)
+#     action = np.random.choice(action_list, p=prob_list)
+#     print("action:", action)
+#     state.apply_action(action)
+#     print("State:", str(state))
+#   else:
+#     action = legal_actions[0]
+#     print("action", action)
+#     state.apply_action(action)
+#     print("State:", str(state))
+
+
+# print("\nFinal state:", state)
+# print("Returns:", state.returns())
 
 
 class MCCFR:
@@ -60,7 +62,7 @@ class MCCFR:
         self.strategy[info_set] = strat
         return strat
 
-    def mccfr(self, state, pi, player):
+    def mccfr(self, state, pi, player, depth=0):
         if state.is_terminal():
             return state.returns()[player]
 
@@ -75,16 +77,17 @@ class MCCFR:
         legal_actions = state.legal_actions()
         strat = self.regret_matching(info_set, legal_actions)
 
-        # Update cumulative strategy
         for a in legal_actions:
             self.cumulative_strategy[info_set][a] += pi * strat[a]
 
-        # Sample one action
         action_probs = np.array([strat[a] for a in legal_actions])
         action_probs /= np.sum(action_probs)
         action = np.random.choice(legal_actions, p=action_probs)
         child = state.child(action)
-        util = self.mccfr(child, pi * strat[action], player)
+        # print("  " * depth + f"-> Player {current_player}, InfoSet: {info_set}, Action: {action}")
+
+        util = self.mccfr(child, pi * strat[action], player, depth=depth+1)
+
 
         if current_player == player:
             # Counterfactual regret update (sampled)
@@ -153,6 +156,7 @@ def best_response_value(state, policy_dict, br_player):
         return sum(
             strat.get(a, 0.0) * best_response_value(state.child(a), policy_dict, br_player)
             for a in legal)
+
 # Run on Leduc
 game = pyspiel.load_game("leduc_poker")
 mccfr = MCCFR(game)
@@ -165,12 +169,6 @@ for info_set, strat in mccfr.avg_strategy.items():
     print(f"{info_set}: {norm_strat}")
 
 
-for info_set, strat in list(mccfr.avg_strategy.items())[:10]:
-    norm = sum(strat.values())
-    normalized = {a: round(v / norm, 2) if norm > 0 else 0.5 for a, v in strat.items()}
-    print(f"{info_set}: {normalized}")
-
-import matplotlib.pyplot as plt
 
 plt.plot(mccfr.checkpoints, mccfr.exploitability_vals)
 plt.xlabel("Iterations")
